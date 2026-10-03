@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="googlebot" content="noindex, nofollow, noarchive">
+<title>اتاق وضعیت — ۵۱.۱</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c1210;
+    --panel: #121a17;
+    --line: #24302b;
+    --text: #e6efe9;
+    --muted: #8fa398;
+    --accent: #6fbf8a;
+    --ok: #3d9a6a; --watch: #c9a227; --warn: #d97706; --crit: #c23b2a;
+    --font: "Vazirmatn", Tahoma, sans-serif;
+    --display: clamp(2.8rem, 7vw, 3.8rem);
+    --title: 0.95rem;
+    --body: 0.92rem;
+    --meta: 0.78rem;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: var(--font); font-size: var(--body); color: var(--text);
+    background:
+      linear-gradient(180deg, #101815 0%, var(--bg) 40%),
+      radial-gradient(800px 320px at 100% 0%, #1a2a22 0%, transparent 60%);
+    line-height: 1.6;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 1.25rem 1rem 2.5rem; }
+  h1 { font-size: 1.15rem; font-weight: 700; margin: 0 0 .25rem; letter-spacing: -0.01em; }
+  .title { font-size: var(--title); font-weight: 600; color: var(--accent); margin: 0 0 .7rem; }
+  .meta { color: var(--muted); font-size: var(--meta); }
+  .hero {
+    display: grid; grid-template-columns: 1.2fr 1fr; gap: 1rem;
+    border: 1px solid var(--line); background: var(--panel); border-radius: 14px;
+    padding: 1.1rem 1.2rem; margin: .9rem 0 1rem;
+  }
+  @media (max-width: 720px) { .hero { grid-template-columns: 1fr; } }
+  .big { font-size: var(--display); font-weight: 700; line-height: 1; color: var(--accent);
+         font-variant-numeric: tabular-nums; }
+  .big span { font-size: 1rem; font-weight: 500; color: var(--muted); }
+  .band-l { margin-top: .45rem; font-weight: 600; font-size: 1.05rem; }
+  .meter { height: 6px; background: #1c2822; border-radius: 99px; margin-top: .85rem; overflow: hidden; }
+  .meter i { display: block; height: 100%; width: 51.1%;
+    background: linear-gradient(90deg, var(--ok), var(--watch), var(--warn), var(--crit)); }
+  .chips { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .55rem; }
+  .chip { font-size: .7rem; border: 1px solid var(--line); border-radius: 6px; padding: .15rem .4rem; color: var(--muted); }
+  .chip.on { color: var(--accent); border-color: rgba(111,191,138,.35); }
+  .chip.off { opacity: .45; }
+  .conf { font-size: 1.4rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .panel {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+    padding: 1rem 1.05rem; margin-bottom: .85rem;
+  }
+  .grid72 { display: grid; grid-template-columns: repeat(3, 1fr); gap: .65rem; }
+  @media (max-width: 720px) { .grid72 { grid-template-columns: 1fr; } }
+  .day72 { border: 1px solid var(--line); border-radius: 10px; padding: .65rem .7rem; background: #0f1613; }
+  .day72.watch { border-color: rgba(201,162,39,.45); }
+  .day72.warn { border-color: rgba(217,119,6,.6); }
+  .day72.crit { border-color: rgba(194,59,42,.75); background: #1a1210; }
+  .d72-h { display: flex; justify-content: space-between; gap: .4rem; font-size: var(--meta); color: var(--muted); margin-bottom: .35rem; }
+  .ev { padding: .35rem 0; border-top: 1px solid var(--line); }
+  .ev:first-of-type { border-top: 0; }
+  .ev-top { display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; }
+  .ev-title { font-size: .86rem; font-weight: 600; line-height: 1.4; margin-top: .15rem; }
+  .tag { font-size: .68rem; border: 1px solid var(--line); border-radius: 5px; padding: .05rem .35rem; color: var(--accent); }
+  .rate { font-size: .72rem; font-weight: 600; color: var(--watch); }
+  .pm { font-size: .72rem; font-weight: 600; color: var(--ok); }
+  .sp-wrap { position: relative; margin: .2rem 0 .8rem; }
+  .spark { width: 100%; height: auto; display: block; touch-action: pan-y; }
+  .sp-grid { stroke: #24302b; stroke-width: 1; }
+  .sp-ylab { fill: #8fa398; font-size: 11px; text-anchor: end; font-family: var(--font); }
+  .sp-xlab { fill: #8fa398; font-size: 11px; text-anchor: middle; font-family: var(--font); }
+  .sp-zone { font-size: 11px; font-weight: 600; text-anchor: end; font-family: var(--font); opacity: .85; }
+  .sp-hit { fill: transparent; cursor: crosshair; }
+  .sp-cursor { stroke: #e6efe9; stroke-width: 1; stroke-dasharray: 3 3; opacity: 0; }
+  .sp-cursor.on { opacity: .5; }
+  .sp-tip {
+    position: absolute; transform: translate(-50%, -100%); pointer-events: none;
+    background: #0c1210; border: 1px solid #24302b; border-radius: 8px;
+    padding: .45rem .6rem; font-size: .76rem; line-height: 1.5; min-width: 10rem; max-width: 16rem;
+    box-shadow: 0 6px 20px rgba(0,0,0,.45); opacity: 0; transition: opacity .12s ease-out;
+  }
+  .sp-tip.on { opacity: 1; }
+  .sp-tv { font-size: .95rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .sp-tev { color: #8fa398; margin-top: .2rem; }
+  .days { display: grid; grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr)); gap: .5rem; margin-top: .6rem; }
+  .day { background: #0f1613; border: 1px solid var(--line); border-radius: 10px; padding: .6rem .5rem .55rem; text-align: center; }
+  .d-wd { font-size: .7rem; color: var(--muted); }
+  .d-date { font-size: 1rem; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; line-height: 1.3; }
+  .d-sub { font-size: .65rem; color: var(--muted); padding-bottom: .35rem; border-bottom: 1px solid var(--line); }
+  .d-sub span { unicode-bidi: isolate; direction: ltr; }
+  .d-num { font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums; margin: .35rem 0 .1rem; }
+  .day.ok .d-num { color: var(--ok); } .day.watch .d-num { color: var(--watch); }
+  .day.warn .d-num { color: var(--warn); } .day.crit .d-num { color: var(--crit); }
+  .day.warn { border-color: rgba(217,119,6,.5); }
+  .day.crit { border-color: rgba(194,59,42,.7); background: #1a1210; }
+  .d-boost { font-size: .65rem; color: var(--watch); }
+  .d-band { font-size: .65rem; min-height: 1.8em; }
+  .pxs { display: grid; grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); gap: .5rem; }
+  .px { background: #0f1613; border: 1px solid var(--line); border-radius: 10px; padding: .6rem .7rem;
+         display: flex; flex-direction: column; gap: .15rem; }
+  .px span { font-size: .72rem; color: var(--muted); }
+  .px b { font-size: 1.25rem; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+  .px i { font-style: normal; font-size: .75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .px i.up { color: #4cc38a; } .px i.down { color: #e5675a; }
+  .tabs { display: flex; gap: .2rem; margin: .8rem 0 1rem; border-bottom: 1px solid var(--line); overflow-x: auto; }
+  .tabs button { white-space: nowrap; flex: none; }
+  .tabs button { font: inherit; font-size: .92rem; font-weight: 600; color: var(--muted); background: none;
+                  border: 0; border-bottom: 2px solid transparent; padding: .55rem .9rem; cursor: pointer; min-height: 44px; }
+  .tabs button[aria-selected=true] { color: var(--text); border-bottom-color: var(--accent); }
+  .tabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .dir { display: grid; grid-template-columns: 1rem 3.6rem minmax(4.2rem, 1fr); align-items: center; gap: .25rem;
+          font-size: .72rem; font-weight: 600; color: var(--muted); min-height: 1.2rem; }
+  .dir.up { color: #4cc38a; } .dir.down { color: #e5675a; }
+  .dir-a { text-align: center; }
+  .dir-w { white-space: nowrap; }
+  .dir-p { font-variant-numeric: tabular-nums; text-align: end; }
+  .fc-cell { display: flex; flex-direction: column; gap: .2rem; min-width: 9.5rem; }
+  .fc-v { font-size: 1.05rem; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.25; min-height: 1.35rem; }
+  .fc-u { font-size: .72rem; font-weight: 500; color: var(--muted); }
+  .fc-r { font-size: .68rem; color: var(--muted); font-variant-numeric: tabular-nums; min-height: 1.1rem; }
+  .fc-name { white-space: nowrap; min-width: 8.5rem; }
+  table.fc { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  table.fc th:nth-child(1) { width: 18%; }
+  table.fc th:nth-child(2), table.fc th:nth-child(3), table.fc th:nth-child(4) { width: 22%; }
+  table.fc th:nth-child(5) { width: 16%; }
+  table.fc.adv th:nth-child(1) { width: 36%; }
+  table.fc.adv th:nth-child(n+2) { width: 16%; }
+  table.fc th, table.fc td { vertical-align: top; padding: .65rem .55rem; border-bottom: 1px solid var(--line); }
+  table.fc thead th { color: var(--muted); font-weight: 500; font-size: .72rem; }
+  @media (max-width: 720px) {
+    table.fc, table.fc tbody { display: block; }
+    table.fc thead { display: none; }
+    table.fc tr { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem .8rem; padding: .8rem 0; border-bottom: 1px solid var(--line); }
+    table.fc td { display: block; padding: 0; border: 0; min-width: 0; }
+    table.fc td.fc-name { grid-column: 1 / -1; font-size: 1rem; }
+    table.fc td.meta { grid-column: 1 / -1; }
+    table.fc td[data-l]::before { content: attr(data-l); display: block; font-size: .7rem; color: var(--muted); margin-bottom: .2rem; }
+    .fc-cell { min-width: 0; }
+    .dir { grid-template-columns: 1rem auto 1fr; }
+  }
+  .score { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: .5rem; margin-bottom: .8rem; }
+  .score div { background: #0f1613; border: 1px solid var(--line); border-radius: 10px; padding: .6rem .7rem; }
+  .score b { display: block; font-size: 1.5rem; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .score span { font-size: .72rem; color: var(--muted); }
+  .pc { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .picks { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: .6rem; margin-bottom: .6rem; }
+  .pick { display: flex; flex-direction: column; gap: .25rem; background: #0f1613; border: 1px solid var(--accent);
+           border-radius: 12px; padding: .8rem; }
+  .pick > span { font-size: .72rem; color: var(--muted); }
+  .pick > b { font-size: 1.5rem; color: var(--accent); }
+  .pick-k { display: flex; gap: .8rem; font-size: .8rem; }
+  .fcgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(10rem, 45%), 1fr)); gap: .6rem; margin-top: .6rem; }
+  .fcc { background: #0f1613; border: 1px solid var(--line); border-radius: 10px; padding: .6rem .7rem; }
+  .fcc-h { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; }
+  .fcc-f { display: flex; flex-wrap: wrap; gap: 0 .5rem; justify-content: space-between; font-size: .72rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .fcg { display: block; width: 100%; height: auto; margin: .3rem 0; }
+  .fcd summary { cursor: pointer; color: var(--muted); font-size: .85rem; margin-top: .8rem; min-height: 44px; display: flex; align-items: center; }
+  .pc.up { color: #4cc38a; } .pc.down { color: #e5675a; }
+  .sig { background: #0f1613; border: 1px solid var(--accent); border-radius: 12px; padding: 1rem; margin-bottom: .8rem; }
+  .sig-a { font-size: 1.6rem; font-weight: 700; color: var(--accent); margin: .2rem 0 .8rem; }
+  .notice { background: #1a1510; border: 1px solid #6b5344; border-radius: 10px; padding: .7rem .8rem;
+             color: #e6c7a8; font-size: .85rem; line-height: 1.55; margin-bottom: .8rem; }
+  .tg-cols { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+  @media (max-width: 720px) { .tg-cols { grid-template-columns: 1fr; } }
+  .tg-posts { margin: .8rem 0 0; padding-inline-start: 1.1rem; color: var(--muted); font-size: .8rem; }
+  .tg-posts li { margin-bottom: .4rem; }
+  .sig-k { display: grid; grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); gap: .6rem; }
+  .sig-k span { display: block; font-size: .72rem; color: var(--muted); }
+  .sig-k b { font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+  .sig-k b.sm, .sig-k small { font-size: .8rem; font-weight: 500; }
+  .ok-t { color: #4cc38a; font-weight: 600; } .bad-t { color: #e5675a; font-weight: 600; }
+  .px.off b { color: var(--muted); }
+  .kpis { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .kpi { background: #0f1613; border: 1px solid var(--line); border-radius: 10px; padding: .55rem .7rem; min-width: 5.8rem; }
+  .kpi span { display: block; color: var(--muted); font-size: .7rem; }
+  .data { font-variant-numeric: tabular-nums; font-weight: 600; font-size: 1.05rem; }
+  table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+  th, td { padding: .42rem .3rem; border-bottom: 1px solid var(--line); text-align: right; }
+  th { color: var(--muted); font-weight: 500; font-size: .72rem; }
+  .num { font-variant-numeric: tabular-nums; }
+  .ok { color: var(--ok); } .watch { color: var(--watch); }
+  .warn { color: var(--warn); } .crit { color: var(--crit); }
+  .bar { background: #1c2822; height: 6px; border-radius: 3px; overflow: hidden; min-width: 4rem; }
+  .bar i { display: block; height: 100%; background: var(--accent); }
+  .agenda { display: flex; flex-direction: column; gap: .5rem; max-height: 28rem; overflow-y: auto; }
+  .ag-day { border: 1px solid var(--line); border-radius: 10px; padding: .65rem .75rem; background: #0f1613; }
+  .ag-date { display: flex; justify-content: space-between; gap: .5rem; font-size: var(--meta); color: var(--muted); margin-bottom: .25rem; }
+  .ag-date b { color: var(--text); font-size: .92rem; }
+  .scroll { overflow-x: auto; }
+  .jd, .gd { unicode-bidi: isolate; direction: ltr; font-variant-numeric: tabular-nums; }
+  .jd { font-weight: 700; color: var(--text); }
+  .gd { font-size: .8em; font-weight: 400; color: var(--muted); margin: 0 .5em; }
+  footer { margin-top: 1.2rem; padding-top: .8rem; border-top: 1px solid var(--line);
+            color: var(--muted); font-size: var(--meta); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>اتاق وضعیت — تنش ایران</h1>
+  <p class="meta">آخرین همگام‌سازی: ۱۴۰۵/۰۷/۱۱ (۲۰۲۶-۱۰-۰۳) ۲۲:۰۶ (تهران)</p>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" id="t-war" aria-controls="tab-war" aria-selected="true">وضعیت جنگ</button>
+    <button role="tab" id="t-econ" aria-controls="tab-econ" aria-selected="false">اقتصاد و پیش‌بینی</button>
+    <button role="tab" id="t-adv" aria-controls="tab-adv" aria-selected="false">سرمایه‌گذاری</button>
+  </nav>
+
+  <div id="tab-war" role="tabpanel" aria-labelledby="t-war">
+  <div class="hero">
+    <div>
+      <div class="big" style="color:#d97706">۵۱.۱ <span>/ ۱۰۰</span></div>
+      <div class="band-l">🟠 هشدار</div>
+      <div class="meter" aria-hidden="true"><i></i></div>
+    </div>
+    <div>
+      <div class="meta">اعتماد فیدها</div>
+      <div class="conf">۱۰۰.۰<span class="meta"> / ۱۰۰</span></div>
+      <div class="chips"><span class='chip on'>بازار</span><span class='chip on'>ADS-B</span><span class='chip on'>اخبار</span><span class='chip on'>دفاعی</span><span class='chip on'>رصد</span><span class='chip on'>PM</span></div>
+      <p class="meta" style="margin-top:.6rem">تقویم ترکیبی: تاریخ‌های قطعی اقتصادی/انتخابات، curated، Polymarket، RSS دفاعی و رصد اکانت‌ها از خبر عمومی، به‌علاوه تیترهای شدید امروز. روید</p>
+    </div>
+  </div>
+
+  <section class="panel">
+    <h2 class="title">۷۲ ساعت آینده</h2>
+    <div class="grid72">
+        <div class="day72 crit">
+          <div class="d72-h"><b>شنبه</b> <span class="jd">۱۴۰۵/۰۷/۱۱</span><span class="gd">۲۰۲۶-۱۰-۰۳</span>
+            <span class="rate">ریت روز ۷۸</span></div>
+          
+                <div class="ev">
+                  <div class="ev-top"><span class="tag">نظامی</span>
+                    <span class="rate">ریت ۷۸</span></div>
+                  <div class="ev-title">ایران Unveils ‘LOW-COST’ Deadly Missiles To Take Down MILLION-DOLLAR U.S. Warplanes - The Times of India</div>
+                </div>
+                <div class="ev">
+                  <div class="ev-top"><span class="tag">نظامی</span>
+                    <span class="rate">ریت ۷۸</span></div>
+                  <div class="ev-title">ایران Claims Major Missile Breakthrough, Says Ballistic Missile Can Hit Moving Targets - The Times of India</div>
+                </div>
+                <div class="ev">
+                  <div class="ev-top"><span class="tag">نظامی</span>
+                    <span class="rate">ریت ۷۸</span></div>
+                  <div class="ev-title">ایران war updates: Foiled Houthi missile injures Saudi resident, Riyadh says - Al Jazeera</div>
+                </div>
+                <div class="ev">
+                  <div class="ev-top"><span class="tag">نظامی</span>
+                    <span class="rate">ریت ۷۲</span></div>
+                  <div class="ev-title">ناو هواپیمابر USS Dwight D. Eisenhower پس از اشتباه Growler به بندر بازمی گردد</div>
+                </div>
+        </div>
+        <div class="day72 ok">
+          <div class="d72-h"><b>یکشنبه</b> <span class="jd">۱۴۰۵/۰۷/۱۲</span><span class="gd">۲۰۲۶-۱۰-۰۴</span>
+            <span class="rate">ریت روز ۰</span></div>
+          <p class='meta'>رویداد زمان‌دار شناخته‌شده‌ای برای این روز نیست.</p><p class='meta'>نزدیک‌ترین: <b>چهارشنبه <span class="jd">۱۴۰۵/۰۷/۱۵</span><span class="gd">۲۰۲۶-۱۰-۰۷</span></b> — سالگرد ۱۵ مهر (حمله حماس) (ریت ۶۰)</p>
+        </div>
+        <div class="day72 ok">
+          <div class="d72-h"><b>دوشنبه</b> <span class="jd">۱۴۰۵/۰۷/۱۳</span><span class="gd">۲۰۲۶-۱۰-۰۵</span>
+            <span class="rate">ریت روز ۰</span></div>
+          <p class='meta'>رویداد زمان‌دار شناخته‌شده‌ای برای این روز نیست.</p><p class='meta'>نزدیک‌ترین: <b>چهارشنبه <span class="jd">۱۴۰۵/۰۷/۱۵</span><span class="gd">۲۰۲۶-۱۰-۰۷</span></b> — سالگرد ۱۵ مهر (حمله حماس) (ریت ۶۰)</p>
+        </div></div>
+  </section>
+
+  <section class="panel">
+    <h2 class="title">مسیر ۳۰روز — جهش‌های رویدادی</h2>
+    <p class="meta">فقط روزهایی که رویداد دارند نشان داده می‌شوند. ریت با داغی رویداد همان روز ترکیب شده.</p>
+    <div class="sp-wrap">
+<svg class="spark" viewBox="0 0 720 250" role="img" aria-label="نمودار شدت ۳۰ روز آینده" direction="ltr">
+  <defs><linearGradient id="sevGrad" gradientUnits="userSpaceOnUse" x1="0" y1="10.0" x2="0" y2="220.0"><stop offset="0.00" stop-color="#c23b2a"/><stop offset="0.25" stop-color="#c23b2a"/><stop offset="0.25" stop-color="#d97706"/><stop offset="0.50" stop-color="#d97706"/><stop offset="0.50" stop-color="#c9a227"/><stop offset="0.75" stop-color="#c9a227"/><stop offset="0.75" stop-color="#3d9a6a"/><stop offset="1.00" stop-color="#3d9a6a"/></linearGradient></defs>
+  <rect x="36" y="167.5" width="672" height="52.5" fill="#3d9a6a" opacity=".09"/><text x="704" y="180.5" class="sp-zone" fill="#3d9a6a">عادی</text><rect x="36" y="115.0" width="672" height="52.5" fill="#c9a227" opacity=".09"/><text x="704" y="128.0" class="sp-zone" fill="#c9a227">پایش فعال</text><rect x="36" y="62.5" width="672" height="52.5" fill="#d97706" opacity=".09"/><text x="704" y="75.5" class="sp-zone" fill="#d97706">هشدار</text><rect x="36" y="10.0" width="672" height="52.5" fill="#c23b2a" opacity=".09"/><text x="704" y="23.0" class="sp-zone" fill="#c23b2a">خطر قریب‌الوقوع</text><line x1="36" x2="708" y1="220.0" y2="220.0" class="sp-grid"/><text x="30" y="224.0" class="sp-ylab">۰</text><line x1="36" x2="708" y1="167.5" y2="167.5" class="sp-grid"/><text x="30" y="171.5" class="sp-ylab">۲۵</text><line x1="36" x2="708" y1="115.0" y2="115.0" class="sp-grid"/><text x="30" y="119.0" class="sp-ylab">۵۰</text><line x1="36" x2="708" y1="62.5" y2="62.5" class="sp-grid"/><text x="30" y="66.5" class="sp-ylab">۷۵</text><line x1="36" x2="708" y1="10.0" y2="10.0" class="sp-grid"/><text x="30" y="14.0" class="sp-ylab">۱۰۰</text>
+  <polygon points="36.0,75.3 59.2,111.2 82.3,113.1 105.5,115.2 128.7,97.6 151.9,57.2 175.0,121.3 198.2,139.4 221.4,124.7 244.6,126.1 267.7,115.4 290.9,128.4 314.1,129.5 337.2,64.2 360.4,131.0 383.6,131.8 406.8,132.4 429.9,132.8 453.1,133.5 476.3,133.9 499.4,134.1 522.6,134.1 545.8,134.5 569.0,134.5 592.1,134.7 615.3,95.1 638.5,134.7 661.7,134.5 684.8,82.2 708.0,129.3 708.0,197.3 684.8,149.0 661.7,200.1 638.5,199.0 615.3,158.1 592.1,196.5 569.0,195.0 545.8,193.5 522.6,191.9 499.4,190.4 476.3,188.7 453.1,186.8 429.9,184.7 406.8,182.8 383.6,180.9 360.4,178.2 337.2,110.0 314.1,173.2 290.9,170.4 267.7,155.3 244.6,163.9 221.4,160.4 198.2,173.0 175.0,152.4 151.9,85.4 128.7,122.8 105.5,137.1 82.3,131.0 59.2,123.8 36.0,87.9" fill="url(#sevGrad)" opacity=".16"/>
+  <polyline points="36.0,81.6 59.2,117.5 82.3,122.1 105.5,126.1 128.7,110.2 151.9,71.3 175.0,136.8 198.2,156.2 221.4,142.5 244.6,145.0 267.7,135.4 290.9,149.4 314.1,151.3 337.2,87.1 360.4,154.7 383.6,156.4 406.8,157.6 429.9,158.9 453.1,160.2 476.3,161.2 499.4,162.2 522.6,163.1 545.8,164.1 569.0,164.8 592.1,165.6 615.3,126.5 638.5,166.9 661.7,167.3 684.8,115.6 708.0,163.3" fill="none" stroke="url(#sevGrad)" stroke-width="3"
+    stroke-linecap="round" stroke-linejoin="round"/>
+  <line class="sp-cursor" x1="0" x2="0" y1="10" y2="220"/>
+  <circle cx="36.0" cy="81.6" r="5" fill="#d97706" stroke="#0c1210" stroke-width="1.5"/><circle cx="59.2" cy="117.5" r="3" fill="#c9a227" stroke="#0c1210" stroke-width="1.5"/><circle cx="82.3" cy="122.1" r="3" fill="#c9a227" stroke="#0c1210" stroke-width="1.5"/><circle cx="105.5" cy="126.1" r="3" fill="#c9a227" stroke="#0c1210" stroke-width="1.5"/><circle cx="128.7" cy="110.2" r="5" fill="#d97706" stroke="#0c1210" stroke-width="1.5"/><circle cx="151.9" cy="71.3" r="5" fill="#d97706" stroke="#0c1210" stroke-width="1.5"/><circle cx="175.0" cy="136.8" r="3" fill="#c9a227" stroke="#0c1210" stroke-width="1.5"/><circle cx="198.2" cy="156.2" r="5" fill="#c9a227" stroke="#0c1210" stroke-width="1.5"/><circle cx="221.4" cy="142.5" r="3" fill="#c9a227" stroke="#0c1210" stroke-width="1.5"/><circle cx="244.6" cy="145.0" r="3" fill="#c9a227" stroke="#0c1210" stroke-width="1.5"/><circle cx="267.7" cy="135.4" r="5" fill="#c9a227" stroke="#0c1210" stroke-width="1.5"/><circle cx="290.9" cy="149.4" r="3" fill="#c9a227" stroke="#0c1210" stroke-width="1.5"/><circle cx="314.1" cy="151.3" r="3" fill="#c9a227" stroke="#0c1210" stroke-width="1.5"/><circle cx="337.2" cy="87.1" r="5" fill="#d97706" stroke="#0c1210" stroke-width="1.5"/><circle cx="360.4" cy="154.7" r="3" fill="#c9a227" stroke="#0c1210" stroke-width="1.5"/><circle cx="383.6" cy="156.4" r="3" fill="#c9a227" stroke="#0c1210" stroke-width="1.5"/><circle cx="406.8" cy="157.6" r="3" fill="#c9a227" stroke="#0c1210" stroke-width="1.5"/><circle cx="429.9" cy="158.9" r="3" fill="#c9a227" stroke="#0c1210" stroke-width="1.5"/><circle cx="453.1" cy="160.2" r="3" fill="#c9a227" stroke="#0c1210" stroke-width="1.5"/><circle cx="476.3" cy="161.2" r="3" fill="#c9a227" stroke="#0c1210" stroke-width="1.5"/><circle cx="499.4" cy="162.2" r="3" fill="#c9a227" stroke="#0c1210" stroke-width="1.5"/><circle cx="522.6" cy="163.1" r="3" fill="#c9a227" stroke="#0c1210" stroke-width="1.5"/><circle cx="545.8" cy="164.1" r="3" fill="#c9a227" stroke="#0c1210" stroke-width="1.5"/><circle cx="569.0" cy="164.8" r="3" fill="#c9a227" stroke="#0c1210" stroke-width="1.5"/><circle cx="592.1" cy="165.6" r="3" fill="#c9a227" stroke="#0c1210" stroke-width="1.5"/><circle cx="615.3" cy="126.5" r="5" fill="#c9a227" stroke="#0c1210" stroke-width="1.5"/><circle cx="638.5" cy="166.9" r="3" fill="#c9a227" stroke="#0c1210" stroke-width="1.5"/><circle cx="661.7" cy="167.3" r="3" fill="#c9a227" stroke="#0c1210" stroke-width="1.5"/><circle cx="684.8" cy="115.6" r="5" fill="#c9a227" stroke="#0c1210" stroke-width="1.5"/><circle cx="708.0" cy="163.3" r="5" fill="#c9a227" stroke="#0c1210" stroke-width="1.5"/><text x="36.0" y="240" class="sp-xlab">۰۷/۱۱</text><text x="151.9" y="240" class="sp-xlab">۰۷/۱۶</text><text x="267.7" y="240" class="sp-xlab">۰۷/۲۱</text><text x="383.6" y="240" class="sp-xlab">۰۷/۲۶</text><text x="499.4" y="240" class="sp-xlab">۰۸/۰۱</text><text x="615.3" y="240" class="sp-xlab">۰۸/۰۶</text><text x="708.0" y="240" class="sp-xlab" style="text-anchor:end">۰۸/۱۰</text><rect class="sp-hit" x="24.4" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;شنبه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۷/۱۱&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۰-۰۳&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۶۵.۹&quot;, &quot;label&quot;: &quot;هشدار&quot;, &quot;color&quot;: &quot;#d97706&quot;, &quot;range&quot;: &quot;۶۲.۹–۶۸.۹&quot;, &quot;ev&quot;: &quot;ایران Unveils ‘LOW-COST’ Deadly Missiles To Take Down MILLION-DOLLAR U | ایران Claims Major Missile Breakthrough, Says Ballistic Missile Can Hi&quot;, &quot;boost&quot;: &quot;۷۸&quot;}" data-x="36.0"/><rect class="sp-hit" x="47.6" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;یکشنبه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۷/۱۲&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۰-۰۴&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۴۸.۸&quot;, &quot;label&quot;: &quot;پایش فعال&quot;, &quot;color&quot;: &quot;#c9a227&quot;, &quot;range&quot;: &quot;۴۵.۸–۵۱.۸&quot;, &quot;ev&quot;: &quot;&quot;, &quot;boost&quot;: &quot;&quot;}" data-x="59.2"/><rect class="sp-hit" x="70.8" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;دوشنبه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۷/۱۳&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۰-۰۵&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۴۶.۶&quot;, &quot;label&quot;: &quot;پایش فعال&quot;, &quot;color&quot;: &quot;#c9a227&quot;, &quot;range&quot;: &quot;۴۲.۴–۵۰.۹&quot;, &quot;ev&quot;: &quot;&quot;, &quot;boost&quot;: &quot;&quot;}" data-x="82.3"/><rect class="sp-hit" x="93.9" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;سه‌شنبه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۷/۱۴&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۰-۰۶&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۴۴.۷&quot;, &quot;label&quot;: &quot;پایش فعال&quot;, &quot;color&quot;: &quot;#c9a227&quot;, &quot;range&quot;: &quot;۳۹.۵–۴۹.۹&quot;, &quot;ev&quot;: &quot;&quot;, &quot;boost&quot;: &quot;&quot;}" data-x="105.5"/><rect class="sp-hit" x="117.1" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;چهارشنبه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۷/۱۵&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۰-۰۷&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۵۲.۳&quot;, &quot;label&quot;: &quot;هشدار&quot;, &quot;color&quot;: &quot;#d97706&quot;, &quot;range&quot;: &quot;۴۶.۳–۵۸.۳&quot;, &quot;ev&quot;: &quot;سالگرد ۱۵ مهر (حمله حماس)&quot;, &quot;boost&quot;: &quot;۶۰&quot;}" data-x="128.7"/><rect class="sp-hit" x="140.3" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;پنجشنبه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۷/۱۶&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۰-۰۸&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۷۰.۸&quot;, &quot;label&quot;: &quot;هشدار&quot;, &quot;color&quot;: &quot;#d97706&quot;, &quot;range&quot;: &quot;۶۴.۱–۷۷.۵&quot;, &quot;ev&quot;: &quot;آیا آتش‌بس آمریکا–ایران تا ۱۵ مهر ادامه دارد؟&quot;, &quot;boost&quot;: &quot;۹۵&quot;}" data-x="151.9"/><rect class="sp-hit" x="163.4" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;جمعه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۷/۱۷&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۰-۰۹&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۳۹.۶&quot;, &quot;label&quot;: &quot;پایش فعال&quot;, &quot;color&quot;: &quot;#c9a227&quot;, &quot;range&quot;: &quot;۳۲.۲–۴۷.۰&quot;, &quot;ev&quot;: &quot;&quot;, &quot;boost&quot;: &quot;&quot;}" data-x="175.0"/><rect class="sp-hit" x="186.6" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;شنبه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۷/۱۸&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۰-۱۰&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۳۰.۴&quot;, &quot;label&quot;: &quot;پایش فعال&quot;, &quot;color&quot;: &quot;#c9a227&quot;, &quot;range&quot;: &quot;۲۲.۴–۳۸.۴&quot;, &quot;ev&quot;: &quot;آیا آمریکا تا قبل از ۲۰۲۷ به ایران حمله نظامی می‌کند؟&quot;, &quot;boost&quot;: &quot;۲۴&quot;}" data-x="198.2"/><rect class="sp-hit" x="209.8" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;یکشنبه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۷/۱۹&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۰-۱۱&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۳۶.۹&quot;, &quot;label&quot;: &quot;پایش فعال&quot;, &quot;color&quot;: &quot;#c9a227&quot;, &quot;range&quot;: &quot;۲۸.۴–۴۵.۴&quot;, &quot;ev&quot;: &quot;&quot;, &quot;boost&quot;: &quot;&quot;}" data-x="221.4"/><rect class="sp-hit" x="233.0" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;دوشنبه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۷/۲۰&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۰-۱۲&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۳۵.۷&quot;, &quot;label&quot;: &quot;پایش فعال&quot;, &quot;color&quot;: &quot;#c9a227&quot;, &quot;range&quot;: &quot;۲۶.۷–۴۴.۷&quot;, &quot;ev&quot;: &quot;&quot;, &quot;boost&quot;: &quot;&quot;}" data-x="244.6"/><rect class="sp-hit" x="256.1" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;سه‌شنبه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۷/۲۱&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۰-۱۳&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۴۰.۳&quot;, &quot;label&quot;: &quot;پایش فعال&quot;, &quot;color&quot;: &quot;#c9a227&quot;, &quot;range&quot;: &quot;۳۰.۸–۴۹.۸&quot;, &quot;ev&quot;: &quot;پنجره انتشار CPI ایالات متحده (تقریبا)&quot;, &quot;boost&quot;: &quot;۴۵&quot;}" data-x="267.7"/><rect class="sp-hit" x="279.3" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;چهارشنبه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۷/۲۲&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۰-۱۴&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۳۳.۶&quot;, &quot;label&quot;: &quot;پایش فعال&quot;, &quot;color&quot;: &quot;#c9a227&quot;, &quot;range&quot;: &quot;۲۳.۶–۴۳.۶&quot;, &quot;ev&quot;: &quot;&quot;, &quot;boost&quot;: &quot;&quot;}" data-x="290.9"/><rect class="sp-hit" x="302.5" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;پنجشنبه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۷/۲۳&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۰-۱۵&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۳۲.۷&quot;, &quot;label&quot;: &quot;پایش فعال&quot;, &quot;color&quot;: &quot;#c9a227&quot;, &quot;range&quot;: &quot;۲۲.۳–۴۳.۱&quot;, &quot;ev&quot;: &quot;&quot;, &quot;boost&quot;: &quot;&quot;}" data-x="314.1"/><rect class="sp-hit" x="325.7" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;جمعه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۷/۲۴&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۰-۱۶&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۶۳.۳&quot;, &quot;label&quot;: &quot;هشدار&quot;, &quot;color&quot;: &quot;#d97706&quot;, &quot;range&quot;: &quot;۵۲.۴–۷۴.۲&quot;, &quot;ev&quot;: &quot;آیا آتش‌بس آمریکا–ایران تا ۲۳ مهر ادامه دارد؟ | آیا آمریکا پایان محاصره ایران را تا ۲۳ مهر اعلام می‌کند؟&quot;, &quot;boost&quot;: &quot;۸۹&quot;}" data-x="337.2"/><rect class="sp-hit" x="348.8" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;شنبه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۷/۲۵&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۰-۱۷&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۳۱.۱&quot;, &quot;label&quot;: &quot;پایش فعال&quot;, &quot;color&quot;: &quot;#c9a227&quot;, &quot;range&quot;: &quot;۱۹.۹–۴۲.۴&quot;, &quot;ev&quot;: &quot;&quot;, &quot;boost&quot;: &quot;&quot;}" data-x="360.4"/><rect class="sp-hit" x="372.0" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;یکشنبه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۷/۲۶&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۰-۱۸&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۳۰.۳&quot;, &quot;label&quot;: &quot;پایش فعال&quot;, &quot;color&quot;: &quot;#c9a227&quot;, &quot;range&quot;: &quot;۱۸.۶–۴۲.۰&quot;, &quot;ev&quot;: &quot;&quot;, &quot;boost&quot;: &quot;&quot;}" data-x="383.6"/><rect class="sp-hit" x="395.2" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;دوشنبه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۷/۲۷&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۰-۱۹&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۲۹.۷&quot;, &quot;label&quot;: &quot;پایش فعال&quot;, &quot;color&quot;: &quot;#c9a227&quot;, &quot;range&quot;: &quot;۱۷.۷–۴۱.۷&quot;, &quot;ev&quot;: &quot;&quot;, &quot;boost&quot;: &quot;&quot;}" data-x="406.8"/><rect class="sp-hit" x="418.3" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;سه‌شنبه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۷/۲۸&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۰-۲۰&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۲۹.۱&quot;, &quot;label&quot;: &quot;پایش فعال&quot;, &quot;color&quot;: &quot;#c9a227&quot;, &quot;range&quot;: &quot;۱۶.۸–۴۱.۵&quot;, &quot;ev&quot;: &quot;&quot;, &quot;boost&quot;: &quot;&quot;}" data-x="429.9"/><rect class="sp-hit" x="441.5" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;چهارشنبه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۷/۲۹&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۰-۲۱&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۲۸.۵&quot;, &quot;label&quot;: &quot;پایش فعال&quot;, &quot;color&quot;: &quot;#c9a227&quot;, &quot;range&quot;: &quot;۱۵.۸–۴۱.۲&quot;, &quot;ev&quot;: &quot;&quot;, &quot;boost&quot;: &quot;&quot;}" data-x="453.1"/><rect class="sp-hit" x="464.7" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;پنجشنبه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۷/۳۰&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۰-۲۲&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۲۸.۰&quot;, &quot;label&quot;: &quot;پایش فعال&quot;, &quot;color&quot;: &quot;#c9a227&quot;, &quot;range&quot;: &quot;۱۴.۹–۴۱.۰&quot;, &quot;ev&quot;: &quot;&quot;, &quot;boost&quot;: &quot;&quot;}" data-x="476.3"/><rect class="sp-hit" x="487.9" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;جمعه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۸/۰۱&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۰-۲۳&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۲۷.۵&quot;, &quot;label&quot;: &quot;پایش فعال&quot;, &quot;color&quot;: &quot;#c9a227&quot;, &quot;range&quot;: &quot;۱۴.۱–۴۰.۹&quot;, &quot;ev&quot;: &quot;&quot;, &quot;boost&quot;: &quot;&quot;}" data-x="499.4"/><rect class="sp-hit" x="511.0" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;شنبه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۸/۰۲&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۰-۲۴&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۲۷.۱&quot;, &quot;label&quot;: &quot;پایش فعال&quot;, &quot;color&quot;: &quot;#c9a227&quot;, &quot;range&quot;: &quot;۱۳.۴–۴۰.۹&quot;, &quot;ev&quot;: &quot;&quot;, &quot;boost&quot;: &quot;&quot;}" data-x="522.6"/><rect class="sp-hit" x="534.2" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;یکشنبه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۸/۰۳&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۰-۲۵&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۲۶.۶&quot;, &quot;label&quot;: &quot;پایش فعال&quot;, &quot;color&quot;: &quot;#c9a227&quot;, &quot;range&quot;: &quot;۱۲.۶–۴۰.۷&quot;, &quot;ev&quot;: &quot;&quot;, &quot;boost&quot;: &quot;&quot;}" data-x="545.8"/><rect class="sp-hit" x="557.4" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;دوشنبه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۸/۰۴&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۰-۲۶&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۲۶.۳&quot;, &quot;label&quot;: &quot;پایش فعال&quot;, &quot;color&quot;: &quot;#c9a227&quot;, &quot;range&quot;: &quot;۱۱.۹–۴۰.۷&quot;, &quot;ev&quot;: &quot;&quot;, &quot;boost&quot;: &quot;&quot;}" data-x="569.0"/><rect class="sp-hit" x="580.6" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;سه‌شنبه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۸/۰۵&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۰-۲۷&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۲۵.۹&quot;, &quot;label&quot;: &quot;پایش فعال&quot;, &quot;color&quot;: &quot;#c9a227&quot;, &quot;range&quot;: &quot;۱۱.۲–۴۰.۶&quot;, &quot;ev&quot;: &quot;&quot;, &quot;boost&quot;: &quot;&quot;}" data-x="592.1"/><rect class="sp-hit" x="603.7" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;چهارشنبه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۸/۰۶&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۰-۲۸&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۴۴.۵&quot;, &quot;label&quot;: &quot;پایش فعال&quot;, &quot;color&quot;: &quot;#c9a227&quot;, &quot;range&quot;: &quot;۲۹.۵–۵۹.۵&quot;, &quot;ev&quot;: &quot;تصمیم نرخ بهره فدرال رزرو (FOMC) | آیا نتانیاهو نخست‌وزیر بعدی اسرائیل می‌شود؟&quot;, &quot;boost&quot;: &quot;۶۰&quot;}" data-x="615.3"/><rect class="sp-hit" x="626.9" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;پنجشنبه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۸/۰۷&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۰-۲۹&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۲۵.۳&quot;, &quot;label&quot;: &quot;پایش فعال&quot;, &quot;color&quot;: &quot;#c9a227&quot;, &quot;range&quot;: &quot;۱۰.۰–۴۰.۶&quot;, &quot;ev&quot;: &quot;&quot;, &quot;boost&quot;: &quot;&quot;}" data-x="638.5"/><rect class="sp-hit" x="650.1" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;جمعه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۸/۰۸&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۰-۳۰&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۲۵.۱&quot;, &quot;label&quot;: &quot;پایش فعال&quot;, &quot;color&quot;: &quot;#c9a227&quot;, &quot;range&quot;: &quot;۹.۵–۴۰.۷&quot;, &quot;ev&quot;: &quot;&quot;, &quot;boost&quot;: &quot;&quot;}" data-x="661.7"/><rect class="sp-hit" x="673.2" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;شنبه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۸/۰۹&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۰-۳۱&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۴۹.۷&quot;, &quot;label&quot;: &quot;پایش فعال&quot;, &quot;color&quot;: &quot;#c9a227&quot;, &quot;range&quot;: &quot;۳۳.۸–۶۵.۶&quot;, &quot;ev&quot;: &quot;آیا آتش‌بس آمریکا–ایران تا ۹ آبان ادامه دارد؟&quot;, &quot;boost&quot;: &quot;۷۰&quot;}" data-x="684.8"/><rect class="sp-hit" x="696.4" y="10" width="23.2" height="210" data-tip="{&quot;date&quot;: &quot;یکشنبه &lt;span class=\&quot;jd\&quot;&gt;۱۴۰۵/۰۸/۱۰&lt;/span&gt;&lt;span class=\&quot;gd\&quot;&gt;۲۰۲۶-۱۱-۰۱&lt;/span&gt;&quot;, &quot;v&quot;: &quot;۲۷.۰&quot;, &quot;label&quot;: &quot;پایش فعال&quot;, &quot;color&quot;: &quot;#c9a227&quot;, &quot;range&quot;: &quot;۱۰.۸–۴۳.۲&quot;, &quot;ev&quot;: &quot;آیا آمریکا پایان محاصره ایران را تا ۹ آبان اعلام می‌کند؟ | ترافیک تنگه هرمز تا ۱۰ مهرماه به حالت عادی باز می گردد؟&quot;, &quot;boost&quot;: &quot;۲۹&quot;}" data-x="708.0"/>
+</svg>
+<div class="sp-tip" role="status"></div>
+</div>
+<script>
+(() => {
+  const wrap = document.currentScript.previousElementSibling;
+  const svg = wrap.querySelector('svg'), tip = wrap.querySelector('.sp-tip'),
+        cur = wrap.querySelector('.sp-cursor');
+  const show = (el, ev) => {
+    const d = JSON.parse(el.dataset.tip);
+    tip.innerHTML = `<b>${d.date}</b><div class="sp-tv" style="color:${d.color}">${d.v} · ${d.label}</div>`
+      + `<div>بازه: <bdi dir="ltr">${d.range}</bdi></div>` + (d.boost ? `<div>رویداد: ریت ${d.boost}</div>` : '')
+      + (d.ev ? `<div class="sp-tev">${d.ev}</div>` : '<div class="sp-tev">روز آرام</div>');
+    const r = wrap.getBoundingClientRect();
+    const x = Math.min(Math.max(ev.clientX - r.left, 90), r.width - 90);
+    tip.style.left = x + 'px';
+    tip.style.top = Math.max(ev.clientY - r.top - 12, 0) + 'px';
+    tip.classList.add('on');
+    cur.setAttribute('x1', el.dataset.x); cur.setAttribute('x2', el.dataset.x);
+    cur.classList.add('on');
+  };
+  svg.querySelectorAll('.sp-hit').forEach(el => {
+    el.addEventListener('pointermove', ev => show(el, ev));
+    el.addEventListener('pointerdown', ev => show(el, ev));
+  });
+  svg.addEventListener('pointerleave', () => { tip.classList.remove('on'); cur.classList.remove('on'); });
+})();
+</script>
+    <div class="days">
+        <div class="day warn">
+          <div class="d-wd">شنبه</div><div class="d-date">۰۷/۱۱</div><div class="d-sub"><span>۱۰-۰۳</span> · روز ۱</div>
+          <div class="d-num">۶۵.۹</div>
+          <div class="d-boost">رویداد ۷۸</div>
+          <div class="d-band">🟠 هشدار</div>
+        </div>
+        <div class="day warn">
+          <div class="d-wd">چهارشنبه</div><div class="d-date">۰۷/۱۵</div><div class="d-sub"><span>۱۰-۰۷</span> · روز ۵</div>
+          <div class="d-num">۵۲.۳</div>
+          <div class="d-boost">رویداد ۶۰</div>
+          <div class="d-band">🟠 هشدار</div>
+        </div>
+        <div class="day warn">
+          <div class="d-wd">پنجشنبه</div><div class="d-date">۰۷/۱۶</div><div class="d-sub"><span>۱۰-۰۸</span> · روز ۶</div>
+          <div class="d-num">۷۰.۸</div>
+          <div class="d-boost">رویداد ۹۵</div>
+          <div class="d-band">🟠 هشدار</div>
+        </div>
+        <div class="day watch">
+          <div class="d-wd">شنبه</div><div class="d-date">۰۷/۱۸</div><div class="d-sub"><span>۱۰-۱۰</span> · روز ۸</div>
+          <div class="d-num">۳۰.۴</div>
+          <div class="d-boost">رویداد ۲۴</div>
+          <div class="d-band">🟡 پایش فعال</div>
+        </div>
+        <div class="day watch">
+          <div class="d-wd">سه‌شنبه</div><div class="d-date">۰۷/۲۱</div><div class="d-sub"><span>۱۰-۱۳</span> · روز ۱۱</div>
+          <div class="d-num">۴۰.۳</div>
+          <div class="d-boost">رویداد ۴۵</div>
+          <div class="d-band">🟡 پایش فعال</div>
+        </div>
+        <div class="day warn">
+          <div class="d-wd">جمعه</div><div class="d-date">۰۷/۲۴</div><div class="d-sub"><span>۱۰-۱۶</span> · روز ۱۴</div>
+          <div class="d-num">۶۳.۳</div>
+          <div class="d-boost">رویداد ۸۹</div>
+          <div class="d-band">🟠 هشدار</div>
+        </div>
+        <div class="day watch">
+          <div class="d-wd">چهارشنبه</div><div class="d-date">۰۸/۰۶</div><div class="d-sub"><span>۱۰-۲۸</span> · روز ۲۶</div>
+          <div class="d-num">۴۴.۵</div>
+          <div class="d-boost">رویداد ۶۰</div>
+          <div class="d-band">🟡 پایش فعال</div>
+        </div>
+        <div class="day watch">
+          <div class="d-wd">شنبه</div><div class="d-date">۰۸/۰۹</div><div class="d-sub"><span>۱۰-۳۱</span> · روز ۲۹</div>
+          <div class="d-num">۴۹.۷</div>
+          <div class="d-boost">رویداد ۷۰</div>
+          <div class="d-band">🟡 پایش فعال</div>
+        </div>
+        <div class="day watch">
+          <div class="d-wd">یکشنبه</div><div class="d-date">۰۸/۱۰</div><div class="d-sub"><span>۱۱-۰۱</span> · روز ۳۰</div>
+          <div class="d-num">۲۷.۰</div>
+          <div class="d-boost">رویداد ۲۹</div>
+          <div class="d-band">🟡 پایش فعال</div>
+        </div></div>
+  </section>
+
+  <section class="panel">
+    <h2 class="title">تقویم ۳۰ روز</h2>
+    <p class="meta">۳۰ مورد · ۲۱ روز بدون مورد شناخته‌شده</p>
+    <div class="agenda">
+        <div class="ag-day">
+          <div class="ag-date"><b><span class="jd">۱۴۰۵/۰۷/۱۱</span><span class="gd">۲۰۲۶-۱۰-۰۳</span></b>
+            <span>شنبه · ریت ۷۸ · ۱۷ مورد</span></div>
+          
+            <div class="ev">
+              <div class="ev-top"><span class="tag">نظامی</span>
+                <span class="rate">ریت ۷۸</span></div>
+              <div class="ev-title">ایران Unveils ‘LOW-COST’ Deadly Missiles To Take Down MILLION-DOLLAR U.S. Warplanes - The Times of India</div>
+              <div class="meta">تیتر شدید ۲۴ ساعت اخیر — رویداد آینده قطعی نیست؛ سیگنال رصد است.</div>
+            </div>
+            <div class="ev">
+              <div class="ev-top"><span class="tag">نظامی</span>
+                <span class="rate">ریت ۷۸</span></div>
+              <div class="ev-title">ایران Claims Major Missile Breakthrough, Says Ballistic Missile Can Hit Moving Targets - The Times of India</div>
+              <div class="meta">تیتر شدید ۲۴ ساعت اخیر — رویداد آینده قطعی نیست؛ سیگنال رصد است.</div>
+            </div>
+            <div class="ev">
+              <div class="ev-top"><span class="tag">نظامی</span>
+                <span class="rate">ریت ۷۸</span></div>
+              <div class="ev-title">ایران war updates: Foiled Houthi missile injures Saudi resident, Riyadh says - Al Jazeera</div>
+              <div class="meta">تیتر شدید ۲۴ ساعت اخیر — رویداد آینده قطعی نیست؛ سیگنال رصد است.</div>
+            </div>
+            <div class="ev">
+              <div class="ev-top"><span class="tag">نظامی</span>
+                <span class="rate">ریت ۷۲</span></div>
+              <div class="ev-title">ناو هواپیمابر USS Dwight D. Eisenhower پس از اشتباه Growler به بندر بازمی گردد</div>
+              <div class="meta">تیتر RSS دفاعی / رصد عملیاتی — برای امروز.</div>
+            </div>
+            <div class="ev">
+              <div class="ev-top"><span class="tag">نظامی</span>
+                <span class="rate">ریت ۷۲</span></div>
+              <div class="ev-title">ناو هواپیمابر USS Harry S. Truman در اواسط عمر تعمیرات اساسی ۵.۱ میلیارد دلاری انجام خواهد داد.</div>
+              <div class="meta">تیتر RSS دفاعی / رصد عملیاتی — برای امروز.</div>
+            </div>
+            <div class="ev">
+              <div class="ev-top"><span class="tag">نظامی</span>
+                <span class="rate">ریت ۷۲</span></div>
+              <div class="ev-title">بوئینگ برای ساخت جنگنده حامل F/A-XX نیروی دریایی با قراردادی ۲۰ میلیارد دلاری انتخاب شد</div>
+              <div class="meta">تیتر RSS دفاعی / رصد عملیاتی — برای امروز.</div>
+            </div>
+            <div class="ev">
+              <div class="ev-top"><span class="tag">نظامی</span>
+                <span class="rate">ریت ۷۲</span></div>
+              <div class="ev-title">به روز شده: نیروی دریایی تا حدی ناو هواپیمابر جان اف کندی را پذیرفت، قرارداد تعمیر اساسی USS Harry S. Truman به HII Newport News اهدا شد.</div>
+              <div class="meta">تیتر RSS دفاعی / رصد عملیاتی — برای امروز.</div>
+            </div>
+            <div class="ev">
+              <div class="ev-top"><span class="tag">نظامی</span>
+                <span class="rate">ریت ۷۲</span></div>
+              <div class="ev-title">اتحادیه اروپا به کشتی های بیشتری برای دریای سرخ نیاز دارد. نیروی دریایی اروپا استقرار هرمز را تنظیم می کند</div>
+              <div class="meta">تیتر RSS دفاعی / رصد عملیاتی — برای امروز.</div>
+            </div>
+            <div class="ev">
+              <div class="ev-top"><span class="tag">نظامی</span>
+                <span class="rate">ریت ۷۲</span></div>
+              <div class="ev-title">ارتش ایالات متحده قصد دارد نیروهای بیشتری را در خاورمیانه مستقر کند - jpost.com</div>
+              <div class="meta">تیتر RSS دفاعی / رصد عملیاتی — برای امروز.</div>
+            </div>
+            <div class="ev">
+              <div class="ev-top"><span class="tag">خبر / رصد</span>
+                <span class="rate">ریت ۷۰</span></div>
+              <div class="ev-title">Is a New Case Being Built for Another Attack on ایران? - WANA News Agency</div>
+              <div class="meta">تیتر شدید ۲۴ ساعت اخیر — رویداد آینده قطعی نیست؛ سیگنال رصد است.</div>
+            </div>
+            <div class="ev">
+              <div class="ev-top"><span class="tag">خبر / رصد</span>
+                <span class="rate">ریت ۷۰</span></div>
+              <div class="ev-title">ایران braces for possibly bigger US bombing campaign - Türkiye Today</div>
+              <div class="meta">تیتر شدید ۲۴ ساعت اخیر — رویداد آینده قطعی نیست؛ سیگنال رصد است.</div>
+            </div>
+            <div class="ev">
+              <div class="ev-top"><span class="tag">خبر / رصد</span>
+                <span class="rate">ریت ۷۰</span></div>
+              <div class="ev-title">President Trump issues ultimatum to ایران: Sign a peace deal or cease to exist - WBFF</div>
+              <div class="meta">تیتر شدید ۲۴ ساعت اخیر — رویداد آینده قطعی نیست؛ سیگنال رصد است.</div>
+            </div>
+            <div class="ev">
+              <div class="ev-top"><span class="tag">نظامی</span>
+                <span class="rate">ریت ۶۸</span></div>
+              <div class="ev-title">IDF targets Yahya Sinwar's successor, Hamas Gaza leader Ali al-Amoudi, in حمله - jpost.com</div>
+              <div class="meta">رصد اکانت/منبع «ارتش اسرائیل» از طریق خبر عمومی (بدون X API).</div>
+            </div>
+            <div class="ev">
+              <div class="ev-top"><span class="tag">نظامی</span>
+                <span class="rate">ریت ۶۸</span></div>
+              <div class="ev-title">Live Updates: Latest from Israel, ایران, and the Middle East - jpost.com</div>
+              <div class="meta">رصد اکانت/منبع «ارتش اسرائیل» از طریق خبر عمومی (بدون X API).</div>
+            </div>
+            <div class="ev">
+              <div class="ev-top"><span class="tag">نظامی</span>
+                <span class="rate">ریت ۶۸</span></div>
+              <div class="ev-title">Netanyahu plotting to drag Trump into new war with ایران - Tabnak</div>
+              <div class="meta">رصد اکانت/منبع «نخست‌وزیر اسرائیل» از طریق خبر عمومی (بدون X API).</div>
+            </div>
+            <div class="ev">
+              <div class="ev-top"><span class="tag">نظامی</span>
+                <span class="rate">ریت ۶۸</span></div>
+              <div class="ev-title">Netanyahu claims اسرائیلi intel stopped 'murderous' RAF Fairford plot - Türkiye Today</div>
+              <div class="meta">رصد اکانت/منبع «نخست‌وزیر اسرائیل» از طریق خبر عمومی (بدون X API).</div>
+            </div>
+            <div class="ev">
+              <div class="ev-top"><span class="tag">نظامی</span>
+                <span class="rate">ریت ۶۸</span></div>
+              <div class="ev-title">Netanyahu says Israel warned UK of alleged ایران-backed plot against RAF Fairford - Ynetnews</div>
+              <div class="meta">رصد اکانت/منبع «نخست‌وزیر اسرائیل» از طریق خبر عمومی (بدون X API).</div>
+            </div>
+        </div>
+        <div class="ag-day">
+          <div class="ag-date"><b><span class="jd">۱۴۰۵/۰۷/۱۵</span><span class="gd">۲۰۲۶-۱۰-۰۷</span></b>
+            <span>چهارشنبه · ریت ۶۰ · ۱ مورد</span></div>
+          
+            <div class="ev">
+              <div class="ev-top"><span class="tag">مناسبت</span>
+                <span class="rate">ریت ۶۰</span></div>
+              <div class="ev-title">سالگرد ۱۵ مهر (حمله حماس)</div>
+              <div class="meta">سالگرد نمادین؛ احتمال عملیات یا تنش بیشتر.</div>
+            </div>
+        </div>
+        <div class="ag-day">
+          <div class="ag-date"><b><span class="jd">۱۴۰۵/۰۷/۱۶</span><span class="gd">۲۰۲۶-۱۰-۰۸</span></b>
+            <span>پنجشنبه · ریت ۹۵ · ۱ مورد</span></div>
+          
+            <div class="ev">
+              <div class="ev-top"><span class="tag">بازار پیش‌بینی</span>
+                <span class="rate">ریت ۹۵</span><span class='pm'>۹۳.۵٪ PM</span></div>
+              <div class="ev-title">آیا آتش‌بس آمریکا–ایران تا ۱۵ مهر ادامه دارد؟</div>
+              <div class="meta">احتمال ضمنی Polymarket: ۹۳.۵٪ · حجم ۲۴س: ۶۶,۷۳۴</div>
+            </div>
+        </div>
+        <div class="ag-day">
+          <div class="ag-date"><b><span class="jd">۱۴۰۵/۰۷/۱۸</span><span class="gd">۲۰۲۶-۱۰-۱۰</span></b>
+            <span>شنبه · ریت ۲۴ · ۱ مورد</span></div>
+          
+            <div class="ev">
+              <div class="ev-top"><span class="tag">نظامی</span>
+                <span class="rate">ریت ۲۴</span><span class='pm'>۱۶.۵٪ PM</span></div>
+              <div class="ev-title">آیا آمریکا تا قبل از ۲۰۲۷ به ایران حمله نظامی می‌کند؟</div>
+              <div class="meta">احتمال ضمنی Polymarket: ۱۶.۵٪ · حجم ۲۴س: ۳۱۹,۰۶۲</div>
+            </div>
+        </div>
+        <div class="ag-day">
+          <div class="ag-date"><b><span class="jd">۱۴۰۵/۰۷/۲۱</span><span class="gd">۲۰۲۶-۱۰-۱۳</span></b>
+            <span>سه‌شنبه · ریت ۴۵ · ۱ مورد</span></div>
+          
+            <div class="ev">
+              <div class="ev-top"><span class="tag">اقتصادی</span>
+                <span class="rate">ریت ۴۵</span></div>
+              <div class="ev-title">پنجره انتشار CPI ایالات متحده (تقریبا)</div>
+              <div class="meta">تاریخ دقیق ماهانه جابه‌جا می‌شود؛ این فقط پنجرهٔ رصد تقریبی است.</div>
+            </div>
+        </div>
+        <div class="ag-day">
+          <div class="ag-date"><b><span class="jd">۱۴۰۵/۰۷/۲۴</span><span class="gd">۲۰۲۶-۱۰-۱۶</span></b>
+            <span>جمعه · ریت ۸۹ · ۲ مورد</span></div>
+          
+            <div class="ev">
+              <div class="ev-top"><span class="tag">بازار پیش‌بینی</span>
+                <span class="rate">ریت ۸۹</span><span class='pm'>۸۱.۵٪ PM</span></div>
+              <div class="ev-title">آیا آتش‌بس آمریکا–ایران تا ۲۳ مهر ادامه دارد؟</div>
+              <div class="meta">احتمال ضمنی Polymarket: ۸۱.۵٪ · حجم ۲۴س: ۵۴,۰۷۱</div>
+            </div>
+            <div class="ev">
+              <div class="ev-top"><span class="tag">نظامی</span>
+                <span class="rate">ریت ۲۳</span><span class='pm'>۹.۰٪ PM</span></div>
+              <div class="ev-title">آیا آمریکا پایان محاصره ایران را تا ۲۳ مهر اعلام می‌کند؟</div>
+              <div class="meta">احتمال ضمنی Polymarket: ۹.۰٪ · حجم ۲۴س: ۱۵۰,۶۰۵</div>
+            </div>
+        </div>
+        <div class="ag-day">
+          <div class="ag-date"><b><span class="jd">۱۴۰۵/۰۸/۰۶</span><span class="gd">۲۰۲۶-۱۰-۲۸</span></b>
+            <span>چهارشنبه · ریت ۶۰ · ۲ مورد</span></div>
+          
+            <div class="ev">
+              <div class="ev-top"><span class="tag">اقتصادی</span>
+                <span class="rate">ریت ۶۰</span></div>
+              <div class="ev-title">تصمیم نرخ بهره فدرال رزرو (FOMC)</div>
+              <div class="meta">دلار، طلا و نفت معمولاً واکنش نشان می‌دهند.</div>
+            </div>
+            <div class="ev">
+              <div class="ev-top"><span class="tag">بازار پیش‌بینی</span>
+                <span class="rate">ریت ۳۵</span><span class='pm'>۳۵.۵٪ PM</span></div>
+              <div class="ev-title">آیا نتانیاهو نخست‌وزیر بعدی اسرائیل می‌شود؟</div>
+              <div class="meta">احتمال ضمنی Polymarket: ۳۵.۵٪ · حجم ۲۴س: ۹۲,۱۶۷</div>
+            </div>
+        </div>
+        <div class="ag-day">
+          <div class="ag-date"><b><span class="jd">۱۴۰۵/۰۸/۰۹</span><span class="gd">۲۰۲۶-۱۰-۳۱</span></b>
+            <span>شنبه · ریت ۷۰ · ۱ مورد</span></div>
+          
+            <div class="ev">
+              <div class="ev-top"><span class="tag">بازار پیش‌بینی</span>
+                <span class="rate">ریت ۷۰</span><span class='pm'>۶۲.۵٪ PM</span></div>
+              <div class="ev-title">آیا آتش‌بس آمریکا–ایران تا ۹ آبان ادامه دارد؟</div>
+              <div class="meta">احتمال ضمنی Polymarket: ۶۲.۵٪ · حجم ۲۴س: ۹۵,۵۷۲</div>
+            </div>
+        </div>
+        <div class="ag-day">
+          <div class="ag-date"><b><span class="jd">۱۴۰۵/۰۸/۱۰</span><span class="gd">۲۰۲۶-۱۱-۰۱</span></b>
+            <span>یکشنبه · ریت ۲۹ · ۴ مورد</span></div>
+          
+            <div class="ev">
+              <div class="ev-top"><span class="tag">نظامی</span>
+                <span class="rate">ریت ۲۹</span><span class='pm'>۲۱.۵٪ PM</span></div>
+              <div class="ev-title">آیا آمریکا پایان محاصره ایران را تا ۹ آبان اعلام می‌کند؟</div>
+              <div class="meta">احتمال ضمنی Polymarket: ۲۱.۵٪ · حجم ۲۴س: ۱۲۸,۳۲۴</div>
+            </div>
+            <div class="ev">
+              <div class="ev-top"><span class="tag">نظامی</span>
+                <span class="rate">ریت ۱۵</span><span class='pm'>۲.۹٪ PM</span></div>
+              <div class="ev-title">ترافیک تنگه هرمز تا ۱۰ مهرماه به حالت عادی باز می گردد؟</div>
+              <div class="meta">احتمال ضمنی Polymarket: ۲.۹٪ · حجم ۲۴س: ۱۴۶,۹۶۱</div>
+            </div>
+            <div class="ev">
+              <div class="ev-top"><span class="tag">بازار پیش‌بینی</span>
+                <span class="rate">ریت ۱۵</span><span class='pm'>۱۲.۵٪ PM</span></div>
+              <div class="ev-title">Israel accuses ایران/proxies of plane stabbing incident by Oct ۳۱?</div>
+              <div class="meta">احتمال ضمنی Polymarket: ۱۲.۵٪ · حجم ۲۴س: ۸۸,۵۶۶</div>
+            </div>
+            <div class="ev">
+              <div class="ev-top"><span class="tag">بازار پیش‌بینی</span>
+                <span class="rate">ریت ۱۵</span><span class='pm'>۱.۷٪ PM</span></div>
+              <div class="ev-title">Kharg Island no longer under ایرانian control by ۹ آبان?</div>
+              <div class="meta">احتمال ضمنی Polymarket: ۱.۷٪ · حجم ۲۴س: ۸۵,۶۱۱</div>
+            </div>
+        </div></div>
+  </section>
+
+  <section class="panel">
+    <h2 class="title">سیگنال‌های امروز</h2>
+    <table>
+      <thead><tr><th>سیگنال</th><th>امتیاز</th><th>وزن</th><th></th></tr></thead>
+      <tbody>
+        <tr>
+          <td>اخبار و گفتمان</td>
+          <td class="num watch">۳۸.۰</td>
+          <td class="meta">۱۸%</td>
+          <td><div class="bar"><i style="width:38.0%"></i></div></td>
+        </tr>
+        <tr>
+          <td>عملیات دفاعی / رصد اکانت‌ها</td>
+          <td class="num crit">۸۷.۷</td>
+          <td class="meta">۱۲%</td>
+          <td><div class="bar"><i style="width:87.7%"></i></div></td>
+        </tr>
+        <tr>
+          <td>استرس بازار (سهام/VIX/OVX/طلا/نفت)</td>
+          <td class="num watch">۲۷.۹</td>
+          <td class="meta">۱۲%</td>
+          <td><div class="bar"><i style="width:27.9%"></i></div></td>
+        </tr>
+        <tr>
+          <td>استرس کلان (دلار/نرخ)</td>
+          <td class="num crit">۹۳.۲</td>
+          <td class="meta">۸%</td>
+          <td><div class="bar"><i style="width:93.2%"></i></div></td>
+        </tr>
+        <tr>
+          <td>صرف ریسک نفت و طلا</td>
+          <td class="num watch">۴۵.۹</td>
+          <td class="meta">۱۲%</td>
+          <td><div class="bar"><i style="width:45.9%"></i></div></td>
+        </tr>
+        <tr>
+          <td>فعالیت هوایی نظامی (ADS-B)</td>
+          <td class="num ok">۱۶.۸</td>
+          <td class="meta">۱۲%</td>
+          <td><div class="bar"><i style="width:16.8%"></i></div></td>
+        </tr>
+        <tr>
+          <td>شباهت به الگوی پیش از جنگ</td>
+          <td class="num ok">۲۳.۴</td>
+          <td class="meta">۱۰%</td>
+          <td><div class="bar"><i style="width:23.4%"></i></div></td>
+        </tr>
+        <tr>
+          <td>بازارهای پیش‌بینی (Polymarket)</td>
+          <td class="num crit">۸۱.۹</td>
+          <td class="meta">۱۶%</td>
+          <td><div class="bar"><i style="width:81.9%"></i></div></td>
+        </tr></tbody>
+    </table>
+  </section>
+
+  <section class="panel">
+    <h2 class="title">بازار و میدان</h2>
+    <div class="kpis"><div class='kpi'><span>ADS-B نظامی</span><b class='data'>۰</b></div><div class='kpi'><span>PM اوج</span><b class='data'>۹۳.۵٪</b></div><div class='kpi'><span>PM عرض</span><b class='data'>۳۱.۹٪</b></div></div>
+  </section>
+  </div>
+
+  <div id="tab-econ" role="tabpanel" aria-labelledby="t-econ" hidden>
+  
+  <section class="panel">
+    <h2 class="title">پیش‌بینی امروز — فردا و ۷ روز بعد</h2>
+    <p class="meta">مدل: روند کوتاه‌مدت قیمت + اثر تغییر پیش‌بینی‌شده شاخص تنش. بازه یعنی محدوده‌ای که قیمت با حدود ۶۸٪ احتمال داخلش می‌ماند. پیش‌بینی هر روز یک بار ثبت و بعداً با قیمت واقعی سنجیده می‌شود.</p>
+    <div class="scroll"><table class="fc">
+      <thead><tr><th>دارایی</th><th>الان</th><th>فردا</th><th>۷ روز بعد</th><th>دقت جهت</th></tr></thead>
+      <tbody><tr><td class='fc-name'><b>طلا جهانی (اونس)</b></td><td data-l='الان'><div class='fc-cell'><div class='dir down'><span class='dir-a'>▼</span><span class='dir-w'>کاهش</span><bdi class='dir-p' dir='ltr'>-۰.۹۵%</bdi></div><div class='fc-v'><bdi dir='ltr'>$۴,۱۶۲</bdi></div></div></td><td data-l='فردا'><div class='fc-cell'><div class='dir down'><span class='dir-a'>▼</span><span class='dir-w'>کاهش</span><bdi class='dir-p' dir='ltr'>-۰.۴۵%</bdi></div><div class='fc-v'><bdi dir='ltr'>$۴,۱۴۳</bdi></div><div class='fc-r'>بازه <bdi dir='ltr'>$۴,۰۹۹ – $۴,۱۸۸</bdi></div></div></td><td data-l='۷ روز بعد'><div class='fc-cell'><div class='dir down'><span class='dir-a'>▼</span><span class='dir-w'>کاهش</span><bdi class='dir-p' dir='ltr'>-۱.۹۱%</bdi></div><div class='fc-v'><bdi dir='ltr'>$۴,۰۸۳</bdi></div><div class='fc-r'>بازه <bdi dir='ltr'>$۳,۹۶۹ – $۴,۲۰۰</bdi></div></div></td><td data-l='دقت جهت'><div class='fc-cell'><div class='fc-v'>۰٪</div><div class='fc-r'>۱ مورد</div></div></td></tr><tr><td class='fc-name'><b>نفت برنت (بشکه)</b></td><td data-l='الان'><div class='fc-cell'><div class='dir down'><span class='dir-a'>▼</span><span class='dir-w'>کاهش</span><bdi class='dir-p' dir='ltr'>-۰.۰۶%</bdi></div><div class='fc-v'><bdi dir='ltr'>$۱۰۲.۲۵</bdi></div></div></td><td data-l='فردا'><div class='fc-cell'><div class='dir down'><span class='dir-a'>▼</span><span class='dir-w'>کاهش</span><bdi class='dir-p' dir='ltr'>-۰.۶۹%</bdi></div><div class='fc-v'><bdi dir='ltr'>$۱۰۱.۵۴</bdi></div><div class='fc-r'>بازه <bdi dir='ltr'>$۹۸.۹۲ – $۱۰۴.۲۳</bdi></div></div></td><td data-l='۷ روز بعد'><div class='fc-cell'><div class='dir down'><span class='dir-a'>▼</span><span class='dir-w'>کاهش</span><bdi class='dir-p' dir='ltr'>-۱.۷۰%</bdi></div><div class='fc-v'><bdi dir='ltr'>$۱۰۰.۵۱</bdi></div><div class='fc-r'>بازه <bdi dir='ltr'>$۹۳.۸۰ – $۱۰۷.۷۰</bdi></div></div></td><td data-l='دقت جهت'><div class='fc-cell'><div class='fc-v'>۰٪</div><div class='fc-r'>۱ مورد</div></div></td></tr><tr><td class='fc-name'><b>بورس آمریکا S&P ۵۰۰</b></td><td data-l='الان'><div class='fc-cell'><div class='dir up'><span class='dir-a'>▲</span><span class='dir-w'>افزایش</span><bdi class='dir-p' dir='ltr'>+۰.۷۳%</bdi></div><div class='fc-v'><bdi dir='ltr'>۷,۷۲۳</bdi></div></div></td><td data-l='فردا'><div class='fc-cell'><div class='dir up'><span class='dir-a'>▲</span><span class='dir-w'>افزایش</span><bdi class='dir-p' dir='ltr'>+۰.۱۷%</bdi></div><div class='fc-v'><bdi dir='ltr'>۷,۷۳۶</bdi></div><div class='fc-r'>بازه <bdi dir='ltr'>۷,۶۸۶ – ۷,۷۸۶</bdi></div></div></td><td data-l='۷ روز بعد'><div class='fc-cell'><div class='dir '><span class='dir-a'>●</span><span class='dir-w'>ثابت</span><bdi class='dir-p' dir='ltr'>+۰.۱۷%</bdi></div><div class='fc-v'><bdi dir='ltr'>۷,۷۳۶</bdi></div><div class='fc-r'>بازه <bdi dir='ltr'>۷,۶۰۴ – ۷,۸۷۰</bdi></div></div></td><td data-l='دقت جهت'><div class='fc-cell'><div class='fc-v'>۰٪</div><div class='fc-r'>۱ مورد</div></div></td></tr><tr><td class='fc-name'><b>بیت‌کوین</b></td><td data-l='الان'><div class='fc-cell'><div class='dir up'><span class='dir-a'>▲</span><span class='dir-w'>افزایش</span><bdi class='dir-p' dir='ltr'>+۰.۵۳%</bdi></div><div class='fc-v'><bdi dir='ltr'>$۸۴,۹۴۴</bdi></div></div></td><td data-l='فردا'><div class='fc-cell'><div class='dir '><span class='dir-a'>●</span><span class='dir-w'>ثابت</span><bdi class='dir-p' dir='ltr'>+۰.۳۳%</bdi></div><div class='fc-v'><bdi dir='ltr'>$۸۵,۲۲۷</bdi></div><div class='fc-r'>بازه <bdi dir='ltr'>$۸۳,۳۵۲ – $۸۷,۱۴۴</bdi></div></div></td><td data-l='۷ روز بعد'><div class='fc-cell'><div class='dir up'><span class='dir-a'>▲</span><span class='dir-w'>افزایش</span><bdi class='dir-p' dir='ltr'>+۱.۰۷%</bdi></div><div class='fc-v'><bdi dir='ltr'>$۸۵,۸۵۷</bdi></div><div class='fc-r'>بازه <bdi dir='ltr'>$۸۰,۹۵۰ – $۹۱,۰۶۱</bdi></div></div></td><td data-l='دقت جهت'><div class='fc-cell'><div class='fc-v'>۰٪</div><div class='fc-r'>۱ مورد</div></div></td></tr><tr><td class='fc-name'><b>دلار آزاد</b></td><td data-l='الان'><div class='fc-cell'><div class='dir up'><span class='dir-a'>▲</span><span class='dir-w'>افزایش</span><bdi class='dir-p' dir='ltr'>+۳.۶۵%</bdi></div><div class='fc-v'><bdi dir='ltr'>۲۶۷,۹۰۰</bdi> <span class='fc-u'>تومان</span></div></div></td><td data-l='فردا'><div class='fc-cell'><div class='dir down'><span class='dir-a'>▼</span><span class='dir-w'>کاهش</span><bdi class='dir-p' dir='ltr'>-۰.۶۹%</bdi></div><div class='fc-v'><bdi dir='ltr'>۲۶۶,۰۵۸</bdi> <span class='fc-u'>تومان</span></div><div class='fc-r'>بازه <bdi dir='ltr'>۲۶۲,۸۸۴ – ۲۶۹,۲۷۰</bdi></div></div></td><td data-l='۷ روز بعد'><div class='fc-cell'><div class='dir down'><span class='dir-a'>▼</span><span class='dir-w'>کاهش</span><bdi class='dir-p' dir='ltr'>-۱.۰۴%</bdi></div><div class='fc-v'><bdi dir='ltr'>۲۶۵,۱۰۲</bdi> <span class='fc-u'>تومان</span></div><div class='fc-r'>بازه <bdi dir='ltr'>۲۵۶,۸۱۷ – ۲۷۳,۶۵۴</bdi></div></div></td><td data-l='دقت جهت'><div class='fc-cell'><div class='fc-v'>۰٪</div><div class='fc-r'>۱ مورد</div></div></td></tr><tr><td class='fc-name'><b>تتر</b></td><td data-l='الان'><div class='fc-cell'><div class='dir up'><span class='dir-a'>▲</span><span class='dir-w'>افزایش</span><bdi class='dir-p' dir='ltr'>+۱.۷۰%</bdi></div><div class='fc-v'><bdi dir='ltr'>۲۶۶,۴۰۰</bdi> <span class='fc-u'>تومان</span></div></div></td><td data-l='فردا'><div class='fc-cell'><div class='dir down'><span class='dir-a'>▼</span><span class='dir-w'>کاهش</span><bdi class='dir-p' dir='ltr'>-۰.۶۹%</bdi></div><div class='fc-v'><bdi dir='ltr'>۲۶۴,۵۶۸</bdi> <span class='fc-u'>تومان</span></div><div class='fc-r'>بازه <bdi dir='ltr'>۲۶۱,۴۱۲ – ۲۶۷,۷۶۲</bdi></div></div></td><td data-l='۷ روز بعد'><div class='fc-cell'><div class='dir down'><span class='dir-a'>▼</span><span class='dir-w'>کاهش</span><bdi class='dir-p' dir='ltr'>-۱.۰۴%</bdi></div><div class='fc-v'><bdi dir='ltr'>۲۶۳,۶۱۷</bdi> <span class='fc-u'>تومان</span></div><div class='fc-r'>بازه <bdi dir='ltr'>۲۵۵,۳۷۹ – ۲۷۲,۱۲۱</bdi></div></div></td><td data-l='دقت جهت'><div class='fc-cell'><div class='fc-v'>۰٪</div><div class='fc-r'>۱ مورد</div></div></td></tr><tr><td class='fc-name'><b>بورس تهران (شاخص کل)</b></td><td data-l='الان'><div class='fc-cell'><div class='dir up'><span class='dir-a'>▲</span><span class='dir-w'>افزایش</span><bdi class='dir-p' dir='ltr'>+۰.۵۳%</bdi></div><div class='fc-v'><bdi dir='ltr'>۷,۸۰۸,۰۶۹</bdi></div></div></td><td data-l='فردا'><div class='fc-cell'><div class='dir up'><span class='dir-a'>▲</span><span class='dir-w'>افزایش</span><bdi class='dir-p' dir='ltr'>+۰.۵۸%</bdi></div><div class='fc-v'><bdi dir='ltr'>۷,۸۵۳,۰۹۴</bdi></div><div class='fc-r'>بازه <bdi dir='ltr'>۷,۷۵۹,۴۲۰ – ۷,۹۴۷,۸۹۹</bdi></div></div></td><td data-l='۷ روز بعد'><div class='fc-cell'><div class='dir up'><span class='dir-a'>▲</span><span class='dir-w'>افزایش</span><bdi class='dir-p' dir='ltr'>+۰.۸۸%</bdi></div><div class='fc-v'><bdi dir='ltr'>۷,۸۷۶,۶۸۹</bdi></div><div class='fc-r'>بازه <bdi dir='ltr'>۷,۶۳۰,۵۴۰ – ۸,۱۳۰,۷۷۸</bdi></div></div></td><td data-l='دقت جهت'><div class='fc-cell'><div class='fc-v'>۱۰۰٪</div><div class='fc-r'>۱ مورد</div></div></td></tr><tr><td class='fc-name'><b>طلای ۱۸ عیار (گرم)</b></td><td data-l='الان'><div class='fc-cell'><div class='dir up'><span class='dir-a'>▲</span><span class='dir-w'>افزایش</span><bdi class='dir-p' dir='ltr'>+۲.۰۷%</bdi></div><div class='fc-v'><bdi dir='ltr'>۲۶,۲۲۵,۳۰۰</bdi> <span class='fc-u'>تومان</span></div></div></td><td data-l='فردا'><div class='fc-cell'><div class='dir down'><span class='dir-a'>▼</span><span class='dir-w'>کاهش</span><bdi class='dir-p' dir='ltr'>-۰.۸۰%</bdi></div><div class='fc-v'><bdi dir='ltr'>۲۶,۰۱۵,۰۳۴</bdi> <span class='fc-u'>تومان</span></div><div class='fc-r'>بازه <bdi dir='ltr'>۲۵,۷۰۴,۷۱۹ – ۲۶,۳۲۹,۰۹۵</bdi></div></div></td><td data-l='۷ روز بعد'><div class='fc-cell'><div class='dir down'><span class='dir-a'>▼</span><span class='dir-w'>کاهش</span><bdi class='dir-p' dir='ltr'>-۱.۲۲%</bdi></div><div class='fc-v'><bdi dir='ltr'>۲۵,۹۰۶,۰۰۰</bdi> <span class='fc-u'>تومان</span></div><div class='fc-r'>بازه <bdi dir='ltr'>۲۵,۰۹۶,۴۲۹ – ۲۶,۷۴۱,۶۸۶</bdi></div></div></td><td data-l='دقت جهت'><div class='fc-cell'><div class='fc-v'>۰٪</div><div class='fc-r'>۱ مورد</div></div></td></tr><tr><td class='fc-name'><b>سکه امامی</b></td><td data-l='الان'><div class='fc-cell'><div class='dir up'><span class='dir-a'>▲</span><span class='dir-w'>افزایش</span><bdi class='dir-p' dir='ltr'>+۳.۲۷%</bdi></div><div class='fc-v'><bdi dir='ltr'>۲۶۰,۳۲۰,۰۰۰</bdi> <span class='fc-u'>تومان</span></div></div></td><td data-l='فردا'><div class='fc-cell'><div class='dir down'><span class='dir-a'>▼</span><span class='dir-w'>کاهش</span><bdi class='dir-p' dir='ltr'>-۰.۸۰%</bdi></div><div class='fc-v'><bdi dir='ltr'>۲۵۸,۲۳۲,۸۳۶</bdi> <span class='fc-u'>تومان</span></div><div class='fc-r'>بازه <bdi dir='ltr'>۲۵۴,۶۴۲,۷۶۶ – ۲۶۱,۸۷۳,۵۲۱</bdi></div></div></td><td data-l='۷ روز بعد'><div class='fc-cell'><div class='dir down'><span class='dir-a'>▼</span><span class='dir-w'>کاهش</span><bdi class='dir-p' dir='ltr'>-۱.۲۲%</bdi></div><div class='fc-v'><bdi dir='ltr'>۲۵۷,۱۵۰,۵۳۳</bdi> <span class='fc-u'>تومان</span></div><div class='fc-r'>بازه <bdi dir='ltr'>۲۴۷,۷۹۹,۷۹۱ – ۲۶۶,۸۵۴,۱۲۵</bdi></div></div></td><td data-l='دقت جهت'><div class='fc-cell'><div class='fc-v'>۰٪</div><div class='fc-r'>۱ مورد</div></div></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section class="panel">
+    <h2 class="title">کارنامه پیش‌بینی‌ها</h2>
+    
+        <div class="score">
+          <div><b>۱۱٪</b><span>جهت درست (بالا/پایین/ثابت)</span></div>
+          <div><b>۵۶٪</b><span>قیمت واقعی داخل بازه</span></div>
+          <div><b>۱.۷۹٪</b><span>میانگین خطای درصدی</span></div>
+          <div><b>۹</b><span>پیش‌بینی سررسیده (۳۰ روز)</span></div>
+        </div>
+    <div class="scroll"><table>
+          <thead><tr><th>روز پیش‌بینی</th><th>دارایی</th><th>افق</th><th>گفتیم</th><th>شد</th><th>نتیجه</th></tr></thead>
+          <tbody><tr><td><span class="jd">۰۷/۱۰</span><span class="gd">۱۰-۰۲</span></td><td>تتر</td><td>فردا</td><td><div class='dir down'><span class='dir-a'>▼</span><span class='dir-w'>کاهش</span><bdi class='dir-p' dir='ltr'>-۰.۸۱%</bdi></div></td><td><div class='dir up'><span class='dir-a'>▲</span><span class='dir-w'>افزایش</span><bdi class='dir-p' dir='ltr'>+۱.۷۰%</bdi></div></td><td><span class='bad-t'>✗ غلط</span></td></tr><tr><td><span class="jd">۰۷/۱۰</span><span class="gd">۱۰-۰۲</span></td><td>دلار آزاد</td><td>فردا</td><td><div class='dir down'><span class='dir-a'>▼</span><span class='dir-w'>کاهش</span><bdi class='dir-p' dir='ltr'>-۰.۸۱%</bdi></div></td><td><div class='dir up'><span class='dir-a'>▲</span><span class='dir-w'>افزایش</span><bdi class='dir-p' dir='ltr'>+۳.۶۵%</bdi></div></td><td><span class='bad-t'>✗ غلط</span></td></tr><tr><td><span class="jd">۰۷/۱۰</span><span class="gd">۱۰-۰۲</span></td><td>بورس تهران (شاخص کل)</td><td>فردا</td><td><div class='dir up'><span class='dir-a'>▲</span><span class='dir-w'>افزایش</span><bdi class='dir-p' dir='ltr'>+۰.۶۸%</bdi></div></td><td><div class='dir up'><span class='dir-a'>▲</span><span class='dir-w'>افزایش</span><bdi class='dir-p' dir='ltr'>+۰.۵۳%</bdi></div></td><td><span class='ok-t'>✓ درست</span></td></tr><tr><td><span class="jd">۰۷/۱۰</span><span class="gd">۱۰-۰۲</span></td><td>بورس آمریکا S&P ۵۰۰</td><td>فردا</td><td><div class='dir up'><span class='dir-a'>▲</span><span class='dir-w'>افزایش</span><bdi class='dir-p' dir='ltr'>+۰.۲۰%</bdi></div></td><td><div class='dir '><span class='dir-a'>●</span><span class='dir-w'>ثابت</span><bdi class='dir-p' dir='ltr'>+۰.۰۳%</bdi></div></td><td><span class='bad-t'>✗ غلط</span></td></tr><tr><td><span class="jd">۰۷/۱۰</span><span class="gd">۱۰-۰۲</span></td><td>طلای ۱۸ عیار (گرم)</td><td>فردا</td><td><div class='dir down'><span class='dir-a'>▼</span><span class='dir-w'>کاهش</span><bdi class='dir-p' dir='ltr'>-۰.۹۴%</bdi></div></td><td><div class='dir up'><span class='dir-a'>▲</span><span class='dir-w'>افزایش</span><bdi class='dir-p' dir='ltr'>+۲.۰۷%</bdi></div></td><td><span class='bad-t'>✗ غلط</span></td></tr><tr><td><span class="jd">۰۷/۱۰</span><span class="gd">۱۰-۰۲</span></td><td>طلا جهانی (اونس)</td><td>فردا</td><td><div class='dir down'><span class='dir-a'>▼</span><span class='dir-w'>کاهش</span><bdi class='dir-p' dir='ltr'>-۰.۴۹%</bdi></div></td><td><div class='dir '><span class='dir-a'>●</span><span class='dir-w'>ثابت</span><bdi class='dir-p' dir='ltr'>+۰.۰۹%</bdi></div></td><td><span class='bad-t'>✗ غلط</span></td></tr><tr><td><span class="jd">۰۷/۱۰</span><span class="gd">۱۰-۰۲</span></td><td>سکه امامی</td><td>فردا</td><td><div class='dir down'><span class='dir-a'>▼</span><span class='dir-w'>کاهش</span><bdi class='dir-p' dir='ltr'>-۰.۹۴%</bdi></div></td><td><div class='dir up'><span class='dir-a'>▲</span><span class='dir-w'>افزایش</span><bdi class='dir-p' dir='ltr'>+۳.۲۷%</bdi></div></td><td><span class='bad-t'>✗ غلط</span></td></tr><tr><td><span class="jd">۰۷/۱۰</span><span class="gd">۱۰-۰۲</span></td><td>بیت‌کوین</td><td>فردا</td><td><div class='dir '><span class='dir-a'>●</span><span class='dir-w'>ثابت</span><bdi class='dir-p' dir='ltr'>+۰.۲۴%</bdi></div></td><td><div class='dir up'><span class='dir-a'>▲</span><span class='dir-w'>افزایش</span><bdi class='dir-p' dir='ltr'>+۰.۳۸%</bdi></div></td><td><span class='bad-t'>✗ غلط</span></td></tr><tr><td><span class="jd">۰۷/۱۰</span><span class="gd">۱۰-۰۲</span></td><td>نفت برنت (بشکه)</td><td>فردا</td><td><div class='dir down'><span class='dir-a'>▼</span><span class='dir-w'>کاهش</span><bdi class='dir-p' dir='ltr'>-۰.۷۶%</bdi></div></td><td><div class='dir '><span class='dir-a'>●</span><span class='dir-w'>ثابت</span><bdi class='dir-p' dir='ltr'>+۰.۱۲%</bdi></div></td><td><span class='bad-t'>✗ غلط</span></td></tr></tbody></table></div>
+  </section>
+
+  <section class="panel">
+    <h2 class="title">قیمت‌های روز جهانی</h2>
+    <p class="meta">آخرین قیمت بسته‌شده و تغییر نسبت به روز قبل.</p>
+    <div class="pxs"><div class='px'><span>نفت برنت (بشکه)</span><b dir='ltr'>$۱۰۲.۲۵</b><i class='down'>▼ ۰.۰۶٪</i></div><div class='px'><span>نفت WTI (بشکه)</span><b dir='ltr'>$۹۱.۱۱</b><i class='down'>▼ ۱.۹۰٪</i></div><div class='px'><span>طلا (اونس)</span><b dir='ltr'>$۴,۱۶۲.۳۰</b><i class='down'>▼ ۰.۹۵٪</i></div><div class='px'><span>S&P ۵۰۰</span><b dir='ltr'>۷,۷۲۲.۷۲</b><i class='up'>▲ ۰.۷۳٪</i></div><div class='px'><span>شاخص دلار DXY</span><b dir='ltr'>۱۰۱.۹۳</b><i class='down'>▼ ۰.۱۷٪</i></div><div class='px'><span>بازده ۱۰ساله آمریکا</span><b dir='ltr'>۵.۲۸%</b><i class='up'>▲ ۰.۷۶٪</i></div><div class='px'><span>VIX (ترس بازار)</span><b dir='ltr'>۱۵.۳۱</b><i class='down'>▼ ۶.۵۹٪</i></div><div class='px'><span>OVX (نوسان نفت)</span><b dir='ltr'>۵۱.۰۰</b><i class='down'>▼ ۱.۳۳٪</i></div><div class='px'><span>بیت‌کوین</span><b dir='ltr'>$۸۴,۹۴۴.۰۷</b><i class='up'>▲ ۰.۵۳٪</i></div></div>
+  </section>
+
+  
+        <section class="panel">
+          <h2 class="title">اقتصاد — سناریو</h2>
+          <p class="meta">تومانی، بر پایه قیمت زنده امروز (منبع: tgju)</p>
+          <div class="scroll"><table>
+            <thead><tr><th>متغیر</th><th>الان</th><th>ثابت</th><th>تشدید</th><th>تخفیف</th></tr></thead>
+            <tbody><tr><td>دلار آزاد (تومان)</td><td>۲۶۷,۹۰۰</td><td>۲۶۷,۹۰۰</td><td>۲۹۹,۱۱۸</td><td>۲۵۰,۵۴۳</td></tr><tr><td>طلای ۱۸ عیار (تومان/گرم)</td><td>۲۶,۲۲۵,۳۰۰</td><td>۲۶,۲۲۵,۳۰۰</td><td>۳۰,۰۲۴,۳۵۱</td><td>۲۴,۰۶۳,۰۹۱</td></tr><tr><td>سکه امامی (تومان)</td><td>۲۶۰,۳۲۰,۰۰۰</td><td>۲۶۰,۳۲۰,۰۰۰</td><td>۲۹۸,۵۶۵,۹۴۷</td><td>۲۳۶,۸۲۷,۴۱۵</td></tr><tr><td>شاخص کل بورس (تغییر٪)</td><td>—</td><td>-۰.۰%</td><td>-۳.۱%</td><td>+۱.۷%</td></tr></tbody>
+          </table></div>
+        </section>
+  </div>
+
+  <div id="tab-adv" role="tabpanel" aria-labelledby="t-adv" hidden>
+  
+  <section class="panel">
+    <h2 class="title">دستیار سرمایه‌گذاری</h2>
+    
+    <div class="sig">
+      <div class="meta">سیگنال امروز</div>
+      <div class="sig-a">خرید: بورس تهران (شاخص کل)</div>
+      <div class="sig-k">
+        <div><span>قیمت ورود</span><b><bdi dir="ltr">۷,۷۶۶,۵۳۱</bdi> <small></small></b></div>
+        <div><span>انتظار ۷ روز</span><b><bdi dir='ltr' class='pc up'>+۰.۸۸%</bdi></b></div>
+        <div><span>انتظار ۳۰ روز</span><b><bdi dir='ltr' class='pc up'>+۳.۷۳%</bdi></b></div>
+        <div><span>دقت جهت این دارایی</span><b class="sm">۱۰۰٪ از ۱ مورد</b></div>
+      </div>
+    </div>
+    <p class="meta">هر روز یک سیگنال ثبت می‌شود: گزینه‌ای که بهترین بازده ۷روزه را نسبت به ریسکش دارد. این یک مدل آماری ساده است، نه توصیه مالی؛ بازار ایران به خبر و تصمیم‌های سیاسی حساس است.</p>
+  </section>
+  
+  <section class="panel">
+    <h2 class="title">اونس طلا از کانال تلگرام</h2>
+    <p class="notice">سیگنال‌ها از کانال عمومی تلگرام خوانده می‌شوند و فقط به‌صورت کاغذی روی اونس طلا سنجیده می‌شوند؛ توصیه مالی نیست.</p>
+    
+    
+    <div class="sig">
+      <div class="meta">معاملهٔ کاغذی اونس — کانال <a href="https://t.me/fatimacafetrade" rel="noopener noreferrer" target="_blank">فاطیماگلد</a></div>
+      <div class="sig-a">خرید اونس طلا</div>
+      <div class="sig-k">
+        <div><span>اونس الان</span><b><bdi dir="ltr">$۴,۱۶۲</bdi></b></div>
+        <div><span>تصمیم امروز</span><b class="sm">خرید اونس · ۴۱۵۱–۴۱۵۴</b></div>
+        <div><span>سطح <bdi dir='ltr'>۴۱۵۱–۴۱۵۴</bdi> · فاصله ۸.۳</span></div>
+      </div>
+    </div>
+    <p class="meta">سطوح «خرید/فروش با تأیید» از پست‌های عمومی کانال خوانده می‌شود؛ اگر قیمت اونس نزدیک سطح باشد همان جهت ثبت می‌شود. کارنامه جدا از مدل آماری خود برنامه است.</p>
+    <div class="tg-cols">
+      <div><h3 class="title" style="font-size:1rem">سطوح خرید</h3><div class='scroll'><table class='fc adv'><tbody><tr><td class='fc-name'>خرید</td><td data-l='بازه'><bdi dir='ltr'>۴۱۴۹–۴۱۵۳</bdi></td><td data-l='متن' class='meta'>خرید دیروز ۴۱۴۹–۵۳ واکنش خیلی خوبی داشت و قیمت از این محدوده تا حوالی ۴۱۹۰ ریکاو</td></tr><tr><td class='fc-name'>خرید</td><td data-l='بازه'><bdi dir='ltr'>۴۱۵۱–۴۱۵۴</bdi></td><td data-l='متن' class='meta'>فعلا حمایت۴۱۵۱-۵۴ رو دارم برای خرید تایید لازمه</td></tr><tr><td class='fc-name'>خرید</td><td data-l='بازه'><bdi dir='ltr'>۴۱۴۰–۴۱۴۵</bdi></td><td data-l='متن' class='meta'>و  سطوح بعدی حمایتی: ۴۱۴۰-۴۵ ۴۱۲۳-۲۸ برای ورود دیدن تایید لازمه</td></tr><tr><td class='fc-name'>خرید</td><td data-l='بازه'><bdi dir='ltr'>۴۱۲۳–۴۱۲۸</bdi></td><td data-l='متن' class='meta'>و  سطوح بعدی حمایتی: ۴۱۴۰-۴۵ ۴۱۲۳-۲۸ برای ورود دیدن تایید لازمه</td></tr></tbody></table></div></div>
+      <div><h3 class="title" style="font-size:1rem">سطوح فروش</h3><div class='scroll'><table class='fc adv'><tbody><tr><td class='fc-name'>فروش</td><td data-l='بازه'><bdi dir='ltr'>۴۲۱۳–۴۲۱۷</bdi></td><td data-l='متن' class='meta'>سطوح فروش با تایید: ۴۲۱۳-۱۷ ۴۲۲۶-۳۰</td></tr><tr><td class='fc-name'>فروش</td><td data-l='بازه'><bdi dir='ltr'>۴۲۲۶–۴۲۳۰</bdi></td><td data-l='متن' class='meta'>سطوح فروش با تایید: ۴۲۱۳-۱۷ ۴۲۲۶-۳۰</td></tr><tr><td class='fc-name'>فروش</td><td data-l='بازه'><bdi dir='ltr'>۴۲۱۳–۴۲۱۷</bdi></td><td data-l='متن' class='meta'>مهم‌تر از اون فروش ۴۲۱۳–۱۷ بود که تقریباً سقف حرکت دیروز شد و بعد از فعال شدن قی</td></tr><tr><td class='fc-name'>فروش</td><td data-l='بازه'><bdi dir='ltr'>۴۱۹۶–۴۲۰۱</bdi></td><td data-l='متن' class='meta'>مقاومت ۴۱۹۶-۴۲۰۱ رو قبلا داشتیم که  قیمت با رسیدن بهش ۱۰۰ پیپ ریزش داشته✅ همچنان</td></tr><tr><td class='fc-name'>فروش</td><td data-l='بازه'><bdi dir='ltr'>۴۲۱۳–۴۲۱۷</bdi></td><td data-l='متن' class='meta'>سطوح فروش با تایید: ۴۲۱۳-۱۷ ۴۲۲۶-۳۰</td></tr><tr><td class='fc-name'>فروش</td><td data-l='بازه'><bdi dir='ltr'>۴۲۲۶–۴۲۳۰</bdi></td><td data-l='متن' class='meta'>سطوح فروش با تایید: ۴۲۱۳-۱۷ ۴۲۲۶-۳۰</td></tr><tr><td class='fc-name'>فروش</td><td data-l='بازه'><bdi dir='ltr'>۴۱۹۶–۴۲۰۱</bdi></td><td data-l='متن' class='meta'>مجدد ۴۱۹۶-۴۲۰۱ مقاومته با تایید</td></tr><tr><td class='fc-name'>فروش</td><td data-l='بازه'><bdi dir='ltr'>۴۲۱۳–۴۲۱۷</bdi></td><td data-l='متن' class='meta'>سطوح فروش با تایید: ۴۲۱۳-۱۷ ۴۲۲۶-۳۰</td></tr></tbody></table></div></div>
+    </div>
+    <ul class='tg-posts'><li><span class='meta'><span class="jd">۰۷/۰۸</span><span class="gd">۰۹-۳۰</span></span> سطوح فروش با تایید:
+۴۲۱۳-۱۷
+۴۲۲۶-۳۰</li><li><span class='meta'><span class="jd">۰۷/۰۸</span><span class="gd">۰۹-۳۰</span></span> فعلا در تایم پایین حفظ ۴۱۶۷ مهمه برای اینکه طلا دوباره بتونه به سمت۴۲۰۰ و۴۲۱۷ حرکت کنه و شکستش میتونه اسکلپ فروش فراهم کنه</li><li><span class='meta'><span class="jd">۰۷/۰۸</span><span class="gd">۰۹-۳۰</span></span> سطوح فروش با تایید: ۴۲۱۳-۱۷ ۴۲۲۶-۳۰</li><li><span class='meta'><span class="jd">۰۷/۰۹</span><span class="gd">۱۰-۰۱</span></span> درود دوستان روزتون به خیر✨</li></ul>
+  </section>
+
+  <section class="panel">
+    <h2 class="title">اگر سیگنال کانال را روی اونس اجرا کرده بودی</h2>
+    <div class="score"><div><b class='meta'>—</b><span>یک روز بعد: هنوز سررسید نشده</span></div><div><b class='meta'>—</b><span>یک هفته بعد: هنوز سررسید نشده</span></div><div><b class='meta'>—</b><span>یک ماه بعد: هنوز سررسید نشده</span></div></div>
+    <div class="scroll"><table class="fc adv">
+      <thead><tr><th>روز و سمت</th><th>قیمت ورود</th><th>۱ روز</th><th>۱ هفته</th><th>۱ ماه</th></tr></thead>
+      <tbody><tr><td class='fc-name'><span class="jd">۰۷/۱۱</span><span class="gd">۱۰-۰۳</span> · <b>خرید اونس · ۴۱۶۸–۴۱۷۲</b></td><td data-l='قیمت ورود'><bdi dir='ltr'>$۴,۱۷۱</bdi></td><td data-l='۱ روز'><span class='meta'>در انتظار</span></td><td data-l='۱ هفته'><span class='meta'>در انتظار</span></td><td data-l='۱ ماه'><span class='meta'>در انتظار</span></td></tr></tbody>
+    </table></div>
+  </section>
+  <section class='panel'><h2 class='title'>سهام و صندوق‌ها برای فردا</h2><p class='meta'>قیمت‌های بورس تهران (TSETMC) دریافت نشد.</p></section>
+
+  <section class="panel">
+    <h2 class="title">رتبه‌بندی امروز</h2>
+    <div class="scroll"><table class="fc adv">
+      <thead><tr><th>گزینه</th><th>فردا</th><th>۷ روز</th><th>۳۰ روز</th><th>دقت جهت</th></tr></thead>
+      <tbody><tr><td class='fc-name'><b>۱. بورس تهران (شاخص کل)</b></td><td data-l='فردا'><bdi dir='ltr' class='pc up'>+۰.۵۸%</bdi></td><td data-l='۷ روز'><bdi dir='ltr' class='pc up'>+۰.۸۸%</bdi></td><td data-l='۳۰ روز'><bdi dir='ltr' class='pc up'>+۳.۷۳%</bdi></td><td data-l='دقت جهت'>۱۰۰٪</td></tr><tr><td class='fc-name'><b>۲. بیت‌کوین</b></td><td data-l='فردا'><bdi dir='ltr' class='pc up'>+۰.۳۳%</bdi></td><td data-l='۷ روز'><bdi dir='ltr' class='pc up'>+۱.۰۷%</bdi></td><td data-l='۳۰ روز'><bdi dir='ltr' class='pc up'>+۴.۶۵%</bdi></td><td data-l='دقت جهت'>۰٪</td></tr><tr><td class='fc-name'><b>۳. دلار آزاد</b></td><td data-l='فردا'><bdi dir='ltr' class='pc down'>-۰.۶۹%</bdi></td><td data-l='۷ روز'><bdi dir='ltr' class='pc down'>-۱.۰۴%</bdi></td><td data-l='۳۰ روز'><bdi dir='ltr' class='pc down'>-۴.۳۰%</bdi></td><td data-l='دقت جهت'>۰٪</td></tr><tr><td class='fc-name'><b>۴. تتر</b></td><td data-l='فردا'><bdi dir='ltr' class='pc down'>-۰.۶۹%</bdi></td><td data-l='۷ روز'><bdi dir='ltr' class='pc down'>-۱.۰۴%</bdi></td><td data-l='۳۰ روز'><bdi dir='ltr' class='pc down'>-۴.۳۰%</bdi></td><td data-l='دقت جهت'>۰٪</td></tr><tr><td class='fc-name'><b>۵. سکه امامی</b></td><td data-l='فردا'><bdi dir='ltr' class='pc down'>-۰.۸۰%</bdi></td><td data-l='۷ روز'><bdi dir='ltr' class='pc down'>-۱.۲۲%</bdi></td><td data-l='۳۰ روز'><bdi dir='ltr' class='pc down'>-۴.۹۹%</bdi></td><td data-l='دقت جهت'>۰٪</td></tr><tr><td class='fc-name'><b>۶. طلای ۱۸ عیار (گرم)</b></td><td data-l='فردا'><bdi dir='ltr' class='pc down'>-۰.۸۰%</bdi></td><td data-l='۷ روز'><bdi dir='ltr' class='pc down'>-۱.۲۲%</bdi></td><td data-l='۳۰ روز'><bdi dir='ltr' class='pc down'>-۴.۹۹%</bdi></td><td data-l='دقت جهت'>۰٪</td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section class="panel">
+    <h2 class="title">نمودار پیش‌بینی ۷ روز</h2>
+    <p class="meta">خط پر: قیمت واقعی روزهای اخیر · خط‌چین: پیش‌بینی · سایه: بازهٔ محتمل (~۶۸٪).</p>
+    <div class="fcgrid"><div class='fcc'><div class='fcc-h'><b>بورس تهران (شاخص کل)</b><bdi dir='ltr' class='pc up'>+۰.۸۸%</bdi></div><div dir='ltr'><svg viewBox='0 0 240 84' class='fcg' role='img' aria-label='بورس تهران (شاخص کل): پیش‌بینی ۷ روز +0.88%'><polygon points='205.5,52.5 177.0,32.3 148.5,26.0 120.0,21.1 91.5,16.8 63.0,12.9 34.5,9.3 6.0,6.0 6.0,78.0 34.5,76.0 63.0,73.7 91.5,71.1 120.0,68.1 148.5,64.4 177.0,59.4 205.5,52.5' fill='#4cc38a' opacity='.15'/><line x1='205.5' y1='6' x2='205.5' y2='78' stroke='#33413b' stroke-dasharray='2 3'/><polyline points='234.0,58.4 205.5,52.5' fill='none' stroke='#c9d4cf' stroke-width='1.6'/><polyline points='205.5,52.5 177.0,45.9 148.5,45.4 120.0,44.8 91.5,44.3 63.0,43.7 34.5,43.1 6.0,42.6' fill='none' stroke='#4cc38a' stroke-width='2' stroke-dasharray='4 3'/><circle cx='6.0' cy='42.6' r='2.6' fill='#4cc38a'/></svg></div><div class='fcc-f'><span>الان <bdi dir='ltr'>۷,۸۰۸,۰۶۹</bdi></span><span>۷ روز بعد <bdi dir='ltr'>۷,۸۷۶,۷۸۰</bdi></span></div></div><div class='fcc'><div class='fcc-h'><b>بیت‌کوین</b><bdi dir='ltr' class='pc up'>+۱.۰۷%</bdi></div><div dir='ltr'><svg viewBox='0 0 240 84' class='fcg' role='img' aria-label='بیت‌کوین: پیش‌بینی ۷ روز +1.07%'><polygon points='85.8,49.5 74.4,33.9 63.0,27.4 51.6,22.2 40.2,17.6 28.8,13.5 17.4,9.6 6.0,6.0 6.0,78.0 17.4,76.2 28.8,74.1 40.2,71.8 51.6,69.0 63.0,65.6 74.4,60.9 85.8,49.5' fill='#4cc38a' opacity='.15'/><line x1='85.8' y1='6' x2='85.8' y2='78' stroke='#33413b' stroke-dasharray='2 3'/><polyline points='234.0,76.6 222.6,37.7 211.2,40.8 199.8,53.5 188.4,53.6 177.0,56.0 165.6,53.4 154.2,53.0 142.8,59.8 131.4,58.9 120.0,59.4 108.6,50.2 97.2,52.7 85.8,49.5' fill='none' stroke='#c9d4cf' stroke-width='1.6'/><polyline points='85.8,49.5 74.4,47.5 63.0,46.8 51.6,46.0 40.2,45.3 28.8,44.6 17.4,43.8 6.0,43.1' fill='none' stroke='#4cc38a' stroke-width='2' stroke-dasharray='4 3'/><circle cx='6.0' cy='43.1' r='2.6' fill='#4cc38a'/></svg></div><div class='fcc-f'><span>الان <bdi dir='ltr'>$۸۴,۹۴۴</bdi></span><span>۷ روز بعد <bdi dir='ltr'>$۸۵,۸۵۳</bdi></span></div></div><div class='fcc'><div class='fcc-h'><b>دلار آزاد</b><bdi dir='ltr' class='pc down'>-۱.۰۴%</bdi></div><div dir='ltr'><svg viewBox='0 0 240 84' class='fcg' role='img' aria-label='دلار آزاد: پیش‌بینی ۷ روز -1.04%'><polygon points='205.5,30.7 177.0,24.8 148.5,19.8 120.0,16.0 91.5,13.0 63.0,10.4 34.5,8.1 6.0,6.0 6.0,78.0 34.5,74.8 63.0,71.3 91.5,67.5 120.0,63.3 148.5,58.4 177.0,52.1 205.5,30.7' fill='#e5675a' opacity='.15'/><line x1='205.5' y1='6' x2='205.5' y2='78' stroke='#33413b' stroke-dasharray='2 3'/><polyline points='234.0,71.0 205.5,30.7' fill='none' stroke='#c9d4cf' stroke-width='1.6'/><polyline points='205.5,30.7 177.0,38.6 148.5,39.2 120.0,39.9 91.5,40.6 63.0,41.2 34.5,41.9 6.0,42.6' fill='none' stroke='#e5675a' stroke-width='2' stroke-dasharray='4 3'/><circle cx='6.0' cy='42.6' r='2.6' fill='#e5675a'/></svg></div><div class='fcc-f'><span>الان <bdi dir='ltr'>۲۶۷,۹۰۰</bdi></span><span>۷ روز بعد <bdi dir='ltr'>۲۶۵,۱۱۴</bdi></span></div></div><div class='fcc'><div class='fcc-h'><b>تتر</b><bdi dir='ltr' class='pc down'>-۱.۰۴%</bdi></div><div dir='ltr'><svg viewBox='0 0 240 84' class='fcg' role='img' aria-label='تتر: پیش‌بینی ۷ روز -1.04%'><polygon points='205.5,30.7 177.0,24.8 148.5,19.8 120.0,16.0 91.5,13.0 63.0,10.4 34.5,8.1 6.0,6.0 6.0,78.0 34.5,74.8 63.0,71.3 91.5,67.5 120.0,63.3 148.5,58.4 177.0,52.1 205.5,30.7' fill='#e5675a' opacity='.15'/><line x1='205.5' y1='6' x2='205.5' y2='78' stroke='#33413b' stroke-dasharray='2 3'/><polyline points='234.0,49.8 205.5,30.7' fill='none' stroke='#c9d4cf' stroke-width='1.6'/><polyline points='205.5,30.7 177.0,38.6 148.5,39.2 120.0,39.9 91.5,40.6 63.0,41.2 34.5,41.9 6.0,42.6' fill='none' stroke='#e5675a' stroke-width='2' stroke-dasharray='4 3'/><circle cx='6.0' cy='42.6' r='2.6' fill='#e5675a'/></svg></div><div class='fcc-f'><span>الان <bdi dir='ltr'>۲۶۶,۴۰۰</bdi></span><span>۷ روز بعد <bdi dir='ltr'>۲۶۳,۶۲۹</bdi></span></div></div><div class='fcc'><div class='fcc-h'><b>سکه امامی</b><bdi dir='ltr' class='pc down'>-۱.۲۲%</bdi></div><div dir='ltr'><svg viewBox='0 0 240 84' class='fcg' role='img' aria-label='سکه امامی: پیش‌بینی ۷ روز -1.22%'><polygon points='205.5,30.7 177.0,24.8 148.5,19.7 120.0,16.0 91.5,13.0 63.0,10.3 34.5,8.1 6.0,6.0 6.0,78.0 34.5,74.8 63.0,71.3 91.5,67.5 120.0,63.3 148.5,58.3 177.0,52.1 205.5,30.7' fill='#e5675a' opacity='.15'/><line x1='205.5' y1='6' x2='205.5' y2='78' stroke='#33413b' stroke-dasharray='2 3'/><polyline points='234.0,61.9 205.5,30.7' fill='none' stroke='#c9d4cf' stroke-width='1.6'/><polyline points='205.5,30.7 177.0,38.5 148.5,39.2 120.0,39.9 91.5,40.6 63.0,41.3 34.5,42.0 6.0,42.7' fill='none' stroke='#e5675a' stroke-width='2' stroke-dasharray='4 3'/><circle cx='6.0' cy='42.7' r='2.6' fill='#e5675a'/></svg></div><div class='fcc-f'><span>الان <bdi dir='ltr'>۲۶۰,۳۲۰,۰۰۰</bdi></span><span>۷ روز بعد <bdi dir='ltr'>۲۵۷,۱۴۴,۰۹۶</bdi></span></div></div><div class='fcc'><div class='fcc-h'><b>طلای ۱۸ عیار (گرم)</b><bdi dir='ltr' class='pc down'>-۱.۲۲%</bdi></div><div dir='ltr'><svg viewBox='0 0 240 84' class='fcg' role='img' aria-label='طلای ۱۸ عیار (گرم): پیش‌بینی ۷ روز -1.22%'><polygon points='205.5,28.6 177.0,24.0 148.5,19.1 120.0,15.5 91.5,12.6 63.0,10.1 34.5,7.9 6.0,6.0 6.0,78.0 34.5,74.6 63.0,71.0 91.5,67.1 120.0,62.7 148.5,57.7 177.0,51.3 205.5,28.6' fill='#e5675a' opacity='.15'/><line x1='205.5' y1='6' x2='205.5' y2='78' stroke='#33413b' stroke-dasharray='2 3'/><polyline points='234.0,51.8 205.5,28.6' fill='none' stroke='#c9d4cf' stroke-width='1.6'/><polyline points='205.5,28.6 177.0,37.8 148.5,38.6 120.0,39.4 91.5,40.2 63.0,41.0 34.5,41.8 6.0,42.6' fill='none' stroke='#e5675a' stroke-width='2' stroke-dasharray='4 3'/><circle cx='6.0' cy='42.6' r='2.6' fill='#e5675a'/></svg></div><div class='fcc-f'><span>الان <bdi dir='ltr'>۲۶,۲۲۵,۳۰۰</bdi></span><span>۷ روز بعد <bdi dir='ltr'>۲۵,۹۰۵,۳۵۱</bdi></span></div></div></div>
+  </section>
+
+  <section class="panel">
+    <h2 class="title">اگر سیگنال‌ها را خریده بودی</h2>
+    <div class="score"><div><b class='meta'>—</b><span>یک روز بعد: هنوز سررسید نشده</span></div><div><b class='meta'>—</b><span>یک هفته بعد: هنوز سررسید نشده</span></div><div><b class='meta'>—</b><span>یک ماه بعد: هنوز سررسید نشده</span></div></div>
+    <div class="scroll"><table class="fc adv">
+      <thead><tr><th>روز و سیگنال</th><th>قیمت ورود</th><th>۱ روز</th><th>۱ هفته</th><th>۱ ماه</th></tr></thead>
+      <tbody><tr><td class='fc-name'><span class="jd">۰۷/۱۱</span><span class="gd">۱۰-۰۳</span> · <b>بورس تهران (شاخص کل)</b></td><td data-l='قیمت ورود'><bdi dir='ltr'>۷,۷۶۶,۵۳۱</bdi></td><td data-l='۱ روز'><span class='meta'>در انتظار</span></td><td data-l='۱ هفته'><span class='meta'>در انتظار</span></td><td data-l='۱ ماه'><span class='meta'>در انتظار</span></td></tr><tr><td class='fc-name'><span class="jd">۰۷/۱۰</span><span class="gd">۱۰-۰۲</span> · <b>بورس تهران (شاخص کل)</b></td><td data-l='قیمت ورود'><bdi dir='ltr'>۷,۷۶۶,۵۳۱</bdi></td><td data-l='۱ روز'><span class='meta'>در انتظار</span></td><td data-l='۱ هفته'><span class='meta'>در انتظار</span></td><td data-l='۱ ماه'><span class='meta'>در انتظار</span></td></tr></tbody>
+    </table></div>
+  </section>
+  </div>
+
+  <footer>
+    همگام‌سازی فرصت‌طلبانه: <code>run_online.bat</code> یا <code>setup_online_task.bat</code>.
+    این ابزار پیش‌بینی قطعی جنگ نیست.
+  </footer>
+</div>
+<script type="application/json" id="payload">{"prices": {"brent": {"last": 102.25, "chg_pct": -0.06, "source": "yahoo"}, "wti": {"last": 91.11, "chg_pct": -1.9, "source": "yahoo"}, "gold": {"last": 4162.3, "chg_pct": -0.95, "source": "yahoo"}, "sp500": {"last": 7722.72, "chg_pct": 0.73, "source": "yahoo"}, "vix": {"last": 15.31, "chg_pct": -6.59, "source": "yahoo"}, "ovx": {"last": 51.0, "chg_pct": -1.33, "source": "yahoo"}, "dxy": {"last": 101.93, "chg_pct": -0.17, "source": "yahoo"}, "tnx": {"last": 5.28, "chg_pct": 0.76, "source": "yahoo"}, "btc": {"last": 84944.07, "chg_pct": 0.53, "source": "yahoo"}}, "ts": "2026-10-03T18:36:41+00:00", "index": 51.1, "confidence": 100.0, "band": {"max": 75, "label_fa": "هشدار", "color": "🟠"}, "subscores": {"news_escalation": {"score": 38.0, "weight": 0.18, "available": true}, "defense_ops": {"score": 87.7, "weight": 0.12, "available": true}, "market_stress": {"score": 27.9, "weight": 0.12, "available": true}, "macro_stress": {"score": 93.2, "weight": 0.08, "available": true}, "commodity_premium": {"score": 45.9, "weight": 0.12, "available": true}, "military_activity": {"score": 16.8, "weight": 0.12, "available": true}, "pattern_similarity": {"score": 23.4, "weight": 0.1, "available": true}, "prediction_markets": {"score": 81.9, "weight": 0.16, "available": true}}, "features": {"brent_premium_pct": 12.84, "gold_premium_pct": -3.65, "sp500_5d_return_pct": -0.27, "vix": 15.31, "news_raw_score": 96.5, "military_flight_count": 0}, "pattern": {"best": "jun2025_12day_war", "similarity": 23.4, "ranked": [{"name": "jun2025_12day_war", "label": "الگوی پیش از جنگ ۱۲ روزه (ژوئن ۲۰۲۵)", "similarity": 23.4}, {"name": "esfand9", "label": "الگوی پیش از ۹ اسفند (نیازمند کالیبراسیون)", "similarity": 23.4}]}, "detail": {"market": {"sp500_5d_return_pct": -0.27, "vix": 15.31, "ovx": 51.0, "gold_5d_return_pct": -3.68, "gold_last": 4162.3, "brent_5d_return_pct": -1.98, "brent_last": 102.25, "wti_5d_return_pct": -1.41, "wti_last": 91.11, "dxy_last": 101.93, "dxy_5d_return_pct": 0.95, "tnx_last": 5.28}, "commodity": {"brent_premium_pct": 12.84, "gold_premium_pct": -3.65}, "military": {"military_flight_count": 0, "total_flights": 146, "callsigns": []}, "news": {"news_raw_score": 96.5, "tier3": 6, "tier2": 24, "tier1": 85, "top_tier3": ["Iran Unveils ‘LOW-COST’ Deadly Missiles To Take Down MILLION-DOLLAR U.S. Warplanes - The Times of India", "Iran Claims Major Missile Breakthrough, Says Ballistic Missile Can Hit Moving Targets - The Times of India", "Is a New Case Being Built for Another Attack on Iran? - WANA News Agency", "Iran braces for possibly bigger US bombing campaign - Türkiye Today", "Iran war updates: Foiled Houthi missile injures Saudi resident, Riyadh says - Al Jazeera", "President Trump issues ultimatum to Iran: Sign a peace deal or cease to exist - WBFF"]}, "polymarket": {"max_yes": 93.5, "breadth_yes": 31.9, "top_question": "US x Iran ceasefire continues through October 7?", "n_markets": 15, "n_escalation": 6, "n_near_30d": 5}, "defense": {"defense_raw": 17.8, "n_items": 28, "n_severe": 0, "top": ["Carrier USS Dwight D. Eisenhower to Return to Port After Growler Mishap", "Aircraft carrier USS Harry S. Truman to undergo $5.1B mid-life overhaul", "Boeing Picked to Build Navy’s F/A-XX Carrier Fighter in Estimated $20B Deal", "UPDATED: Navy Partially Accepts Carrier John F. Kennedy, HII Newport News Awarded USS Harry S. Truman Overhaul Contract", "EU Needs More Ships for Red Sea; European Navies Adjust Hormuz Deployments", "US military plans to deploy more forces to Middle East - jpost.com"], "sources_ok": {"defense_rss": true, "watch_accounts": true}}}, "feeds": {"markets": {"brent": true, "wti": true, "gold": true, "sp500": true, "vix": true, "ovx": true, "dxy": true, "tnx": true, "btc": true}, "markets_core": true, "adsb": true, "news": true, "polymarket": true, "defense": true, "watch": true, "news_errors": [], "defense_errors": [], "watch_errors": []}, "iran": {"tgju": {"ok": true, "source": "call1", "usd_irr": 2679000, "gold_geram18": 262253000, "coin_emami": 2603200000, "usdt_irr": 2664000, "tedpix": 7808068.7, "dp": {"usd": 3.65, "usdt": 1.7, "tedpix": 0.53}}, "nobitex": {"ok": false, "error": "HTTP 530 for https://api.nobitex.ir/v2/orderbook/USDTIRT"}, "tedpix": {"ok": true, "source": "tgju:call1", "tedpix": 7808068.7, "change_pct": 0.53}, "tse": {"عیار": [["2026-09-27", 674014.0], ["2026-09-28", 692310.0], ["2026-09-29", 712500.0], ["2026-09-30", 707030.0], ["2026-10-03", 746487.0]], "طلا": [["2026-09-27", 1713998.0], ["2026-09-28", 1758000.0], ["2026-09-29", 1807602.0], ["2026-09-30", 1791122.0], ["2026-10-03", 1889160.0]], "کهربا": [["2026-09-27", 231924.0], ["2026-09-28", 238100.0], ["2026-09-29", 244988.0], ["2026-09-30", 243080.0], ["2026-10-03", 256250.0]], "زر": [["2026-09-27", 1027975.0], ["2026-09-28", 1053990.0], ["2026-09-29", 1082399.0], ["2026-09-30", 1078039.0], ["2026-10-03", 1133885.0]], "گوهر": [["2026-09-26", 1145000.0], ["2026-09-28", 14827.0], ["2026-09-29", 15210.0], ["2026-09-30", 15148.0], ["2026-10-03", 15937.0]], "فولاد": [["2026-09-27", 3350.0], ["2026-09-28", 3420.0], ["2026-09-29", 3520.0], ["2026-09-30", 3620.0], ["2026-10-03", 3710.0]], "فملی": [["2026-09-27", 25290.0], ["2026-09-28", 25840.0], ["2026-09-29", 26600.0], ["2026-09-30", 27390.0], ["2026-10-03", 28210.0]], "شستا": [["2026-09-27", 3480.0], ["2026-09-28", 3560.0], ["2026-09-29", 3650.0], ["2026-09-30", 3730.0], ["2026-10-03", 3620.0]], "خودرو": [["2026-09-27", 667.0], ["2026-09-28", 669.0], ["2026-09-29", 667.0], ["2026-09-30", 692.0], ["2026-10-03", 708.0]], "خساپا": [["2026-09-27", 684.0], ["2026-09-28", 690.0], ["2026-09-29", 676.0], ["2026-09-30", 705.0], ["2026-10-03", 682.0]], "وبملت": [["2026-09-27", 1462.0], ["2026-09-28", 1483.0], ["2026-09-29", 1479.0], ["2026-09-30", 1529.0], ["2026-10-03", 1476.0]], "وتجارت": [["2026-09-27", 942.0], ["2026-09-28", 962.0], ["2026-09-29", 932.0], ["2026-09-30", 959.0], ["2026-10-03", 922.0]], "شپنا": [["2026-09-27", 12740.0], ["2026-09-28", 13080.0], ["2026-09-29", 13300.0], ["2026-09-30", 13720.0], ["2026-10-03", 13300.0]], "شبندر": [["2026-09-27", 14980.0], ["2026-09-28", 15110.0], ["2026-09-29", 15080.0], ["2026-09-30", 15270.0], ["2026-10-03", 14800.0]], "شتران": [["2026-09-27", 6450.0], ["2026-09-28", 6580.0], ["2026-09-29", 6640.0], ["2026-09-30", 6710.0], ["2026-10-03", 6500.0]], "فارس": [["2026-09-27", 12130.0], ["2026-09-28", 12270.0], ["2026-09-29", 12610.0], ["2026-09-30", 12980.0], ["2026-10-03", 12880.0]], "پارس": [["2026-09-27", 3012.0], ["2026-09-28", 3102.0], ["2026-09-29", 3195.0], ["2026-09-30", 3290.0], ["2026-10-03", 3290.0]], "کگل": [["2026-09-27", 2954.0], ["2026-09-28", 3042.0], ["2026-09-29", 3087.0], ["2026-09-30", 3205.0], ["2026-10-03", 3100.0]], "اخابر": [["2026-09-27", 1003.0], ["2026-09-28", 1002.0], ["2026-09-29", 984.0], ["2026-09-30", 1000.0], ["2026-10-03", 970.0]], "شکیمیا": [["2026-09-30", 5701.0], ["2026-10-03", 6090.0]]}}, "forecast": {"mode": "تومانی، بر پایه قیمت زنده امروز (منبع: tgju)", "display": "money", "usd_source": "tgju", "scenarios": {"same": {"stress": 0.51}, "up": {"stress": 0.66, "label_fa": "اگر تشدید شود (+۱۵ واحد شاخص)"}, "down": {"stress": 0.36, "label_fa": "اگر تخفیف شود (−۱۵ واحد شاخص)"}}, "usd_irr": {"now": 2679000, "same": 2679000.0, "up": 2991181.0905375, "down": 2505427.0207125}, "gold18_gram_irr": {"now": 262253000, "same": 262252999.99999997, "up": 300243513.91668195, "down": 240630914.6481951, "global_gold_oz_usd": 4162.3}, "coin_emami_irr": {"now": 2603200000, "same": 2603200000.0, "up": 2985659468.8648124, "down": 2368274152.602798}, "tedpix": {"now": 7808068.7, "pct_same": -0.0, "pct_up": -3.1, "pct_down": 1.7}, "notes_fa": ["مدل ساده و شفاف است و روی جنگ ۱۲ روزه کالیبره شده: در فاز حاد دلار آزاد ~٪۵۵+ و شاخص بورس ~٪۱۵− حرکت کرد.", "حالت «شاخص ثابت بماند» یعنی بازارها سطح تنش امروز را جذب کرده‌اند؛ تغییر فقط از جابه‌جایی شاخص می‌آید.", "در فاز پس از آتش‌بس، بورس تهران معمولاً به‌عنوان پوشش تورمی رالی قوی می‌کند — افت پیش‌بینی‌شده فقط فاز حاد است.", "طلای ۱۸ عیار = طلای جهانی × دلار × ضریب عیار + صرف محلی؛ سکه شامل حباب تقریبی است."]}, "month_path": {"days": 30, "from_index": 51.1, "momentum_per_day": 0.0, "vol": 2.5, "history_days_used": 2, "rows": [{"day": 1, "date": "2026-10-03", "index": 65.9, "rating": 65.9, "event_boost": 78, "low": 62.9, "high": 68.9, "up": 51.1, "down": 51.1, "band": {"label_fa": "هشدار", "color": "🟠"}}, {"day": 2, "date": "2026-10-04", "index": 48.8, "rating": 48.8, "event_boost": 0, "low": 45.8, "high": 51.8, "up": 49.2, "down": 48.4, "band": {"label_fa": "پایش فعال", "color": "🟡"}}, {"day": 3, "date": "2026-10-05", "index": 46.6, "rating": 46.6, "event_boost": 0, "low": 42.4, "high": 50.9, "up": 47.4, "down": 46.0, "band": {"label_fa": "پایش فعال", "color": "🟡"}}, {"day": 4, "date": "2026-10-06", "index": 44.7, "rating": 44.7, "event_boost": 0, "low": 39.5, "high": 49.9, "up": 45.8, "down": 43.7, "band": {"label_fa": "پایش فعال", "color": "🟡"}}, {"day": 5, "date": "2026-10-07", "index": 52.3, "rating": 52.3, "event_boost": 60, "low": 46.3, "high": 58.3, "up": 44.2, "down": 41.6, "band": {"label_fa": "هشدار", "color": "🟠"}}, {"day": 6, "date": "2026-10-08", "index": 70.8, "rating": 70.8, "event_boost": 95, "low": 64.1, "high": 77.5, "up": 42.8, "down": 39.7, "band": {"label_fa": "هشدار", "color": "🟠"}}, {"day": 7, "date": "2026-10-09", "index": 39.6, "rating": 39.6, "event_boost": 0, "low": 32.2, "high": 47.0, "up": 41.5, "down": 37.9, "band": {"label_fa": "پایش فعال", "color": "🟡"}}, {"day": 8, "date": "2026-10-10", "index": 30.4, "rating": 30.4, "event_boost": 24, "low": 22.4, "high": 38.4, "up": 40.2, "down": 36.3, "band": {"label_fa": "پایش فعال", "color": "🟡"}}, {"day": 9, "date": "2026-10-11", "index": 36.9, "rating": 36.9, "event_boost": 0, "low": 28.4, "high": 45.4, "up": 39.0, "down": 34.8, "band": {"label_fa": "پایش فعال", "color": "🟡"}}, {"day": 10, "date": "2026-10-12", "index": 35.7, "rating": 35.7, "event_boost": 0, "low": 26.7, "high": 44.7, "up": 37.9, "down": 33.4, "band": {"label_fa": "پایش فعال", "color": "🟡"}}, {"day": 11, "date": "2026-10-13", "index": 40.3, "rating": 40.3, "event_boost": 45, "low": 30.8, "high": 49.8, "up": 36.9, "down": 32.2, "band": {"label_fa": "پایش فعال", "color": "🟡"}}, {"day": 12, "date": "2026-10-14", "index": 33.6, "rating": 33.6, "event_boost": 0, "low": 23.6, "high": 43.6, "up": 36.0, "down": 31.0, "band": {"label_fa": "پایش فعال", "color": "🟡"}}, {"day": 13, "date": "2026-10-15", "index": 32.7, "rating": 32.7, "event_boost": 0, "low": 22.3, "high": 43.1, "up": 35.1, "down": 29.9, "band": {"label_fa": "پایش فعال", "color": "🟡"}}, {"day": 14, "date": "2026-10-16", "index": 63.3, "rating": 63.3, "event_boost": 89, "low": 52.4, "high": 74.2, "up": 34.3, "down": 28.9, "band": {"label_fa": "هشدار", "color": "🟠"}}, {"day": 15, "date": "2026-10-17", "index": 31.1, "rating": 31.1, "event_boost": 0, "low": 19.9, "high": 42.4, "up": 33.5, "down": 28.0, "band": {"label_fa": "پایش فعال", "color": "🟡"}}, {"day": 16, "date": "2026-10-18", "index": 30.3, "rating": 30.3, "event_boost": 0, "low": 18.6, "high": 42.0, "up": 32.8, "down": 27.2, "band": {"label_fa": "پایش فعال", "color": "🟡"}}, {"day": 17, "date": "2026-10-19", "index": 29.7, "rating": 29.7, "event_boost": 0, "low": 17.7, "high": 41.7, "up": 32.1, "down": 26.4, "band": {"label_fa": "پایش فعال", "color": "🟡"}}, {"day": 18, "date": "2026-10-20", "index": 29.1, "rating": 29.1, "event_boost": 0, "low": 16.8, "high": 41.5, "up": 31.5, "down": 25.7, "band": {"label_fa": "پایش فعال", "color": "🟡"}}, {"day": 19, "date": "2026-10-21", "index": 28.5, "rating": 28.5, "event_boost": 0, "low": 15.8, "high": 41.2, "up": 30.9, "down": 25.1, "band": {"label_fa": "پایش فعال", "color": "🟡"}}, {"day": 20, "date": "2026-10-22", "index": 28.0, "rating": 28.0, "event_boost": 0, "low": 14.9, "high": 41.0, "up": 30.3, "down": 24.5, "band": {"label_fa": "پایش فعال", "color": "🟡"}}, {"day": 21, "date": "2026-10-23", "index": 27.5, "rating": 27.5, "event_boost": 0, "low": 14.1, "high": 40.9, "up": 29.8, "down": 23.9, "band": {"label_fa": "پایش فعال", "color": "🟡"}}, {"day": 22, "date": "2026-10-24", "index": 27.1, "rating": 27.1, "event_boost": 0, "low": 13.4, "high": 40.9, "up": 29.3, "down": 23.4, "band": {"label_fa": "پایش فعال", "color": "🟡"}}, {"day": 23, "date": "2026-10-25", "index": 26.6, "rating": 26.6, "event_boost": 0, "low": 12.6, "high": 40.7, "up": 28.9, "down": 23.0, "band": {"label_fa": "پایش فعال", "color": "🟡"}}, {"day": 24, "date": "2026-10-26", "index": 26.3, "rating": 26.3, "event_boost": 0, "low": 11.9, "high": 40.7, "up": 28.4, "down": 22.5, "band": {"label_fa": "پایش فعال", "color": "🟡"}}, {"day": 25, "date": "2026-10-27", "index": 25.9, "rating": 25.9, "event_boost": 0, "low": 11.2, "high": 40.6, "up": 28.0, "down": 22.2, "band": {"label_fa": "پایش فعال", "color": "🟡"}}, {"day": 26, "date": "2026-10-28", "index": 44.5, "rating": 44.5, "event_boost": 60, "low": 29.5, "high": 59.5, "up": 27.7, "down": 21.8, "band": {"label_fa": "پایش فعال", "color": "🟡"}}, {"day": 27, "date": "2026-10-29", "index": 25.3, "rating": 25.3, "event_boost": 0, "low": 10.0, "high": 40.6, "up": 27.3, "down": 21.5, "band": {"label_fa": "پایش فعال", "color": "🟡"}}, {"day": 28, "date": "2026-10-30", "index": 25.1, "rating": 25.1, "event_boost": 0, "low": 9.5, "high": 40.7, "up": 27.0, "down": 21.1, "band": {"label_fa": "پایش فعال", "color": "🟡"}}, {"day": 29, "date": "2026-10-31", "index": 49.7, "rating": 49.7, "event_boost": 70, "low": 33.8, "high": 65.6, "up": 26.7, "down": 20.9, "band": {"label_fa": "پایش فعال", "color": "🟡"}}, {"day": 30, "date": "2026-11-01", "index": 27.0, "rating": 27.0, "event_boost": 29, "low": 10.8, "high": 43.2, "up": 26.4, "down": 20.6, "band": {"label_fa": "پایش فعال", "color": "🟡"}}], "note_fa": "مسیر ۳۰روزه سناریو است نه پیش‌بینی قطعی: ترکیب شتاب روزهای اخیر تاریخچه + بازگشت به‌سمت فضای آرام‌تر، با دو شاخه تشدید/تخفیف. بازه low–high با فاصلهٔ زمانی پهن می‌شود. ریت هر روز با رویداد همان روز ترکیب می‌شود: روز آرام ≈ مسیر پایه؛ روز انتخابات/NFP/بازار پیش‌بینی به ریت آن رویداد نزدیک می‌شود."}, "agenda": {"from": "2026-10-03", "to": "2026-11-01", "days": [{"day": 1, "date": "2026-10-03", "weekday": "شنبه", "n_events": 17, "top_rating": 78, "events": [{"date": "2026-10-03", "title_fa": "ایران Unveils ‘LOW-COST’ Deadly Missiles To Take Down MILLION-DOLLAR U.S. Warplanes - The Times of India", "title_en": "Iran Unveils ‘LOW-COST’ Deadly Missiles To Take Down MILLION-DOLLAR U.S. Warplanes - The Times of India", "kind": "military", "source": "news", "rating": 78, "detail_fa": "تیتر شدید ۲۴ ساعت اخیر — رویداد آینده قطعی نیست؛ سیگنال رصد است.", "kind_fa": "نظامی"}, {"date": "2026-10-03", "title_fa": "ایران Claims Major Missile Breakthrough, Says Ballistic Missile Can Hit Moving Targets - The Times of India", "title_en": "Iran Claims Major Missile Breakthrough, Says Ballistic Missile Can Hit Moving Targets - The Times of India", "kind": "military", "source": "news", "rating": 78, "detail_fa": "تیتر شدید ۲۴ ساعت اخیر — رویداد آینده قطعی نیست؛ سیگنال رصد است.", "kind_fa": "نظامی"}, {"date": "2026-10-03", "title_fa": "ایران war updates: Foiled Houthi missile injures Saudi resident, Riyadh says - Al Jazeera", "title_en": "Iran war updates: Foiled Houthi missile injures Saudi resident, Riyadh says - Al Jazeera", "kind": "military", "source": "news", "rating": 78, "detail_fa": "تیتر شدید ۲۴ ساعت اخیر — رویداد آینده قطعی نیست؛ سیگنال رصد است.", "kind_fa": "نظامی"}, {"date": "2026-10-03", "title_fa": "ناو هواپیمابر USS Dwight D. Eisenhower پس از اشتباه Growler به بندر بازمی گردد", "title_en": "Carrier USS Dwight D. Eisenhower to Return to Port After Growler Mishap", "kind": "military", "source": "defense", "rating": 72, "detail_fa": "تیتر RSS دفاعی / رصد عملیاتی — برای امروز.", "kind_fa": "نظامی"}, {"date": "2026-10-03", "title_fa": "ناو هواپیمابر USS Harry S. Truman در اواسط عمر تعمیرات اساسی 5.1 میلیارد دلاری انجام خواهد داد.", "title_en": "Aircraft carrier USS Harry S. Truman to undergo $5.1B mid-life overhaul", "kind": "military", "source": "defense", "rating": 72, "detail_fa": "تیتر RSS دفاعی / رصد عملیاتی — برای امروز.", "kind_fa": "نظامی"}, {"date": "2026-10-03", "title_fa": "بوئینگ برای ساخت جنگنده حامل F/A-XX نیروی دریایی با قراردادی 20 میلیارد دلاری انتخاب شد", "title_en": "Boeing Picked to Build Navy’s F/A-XX Carrier Fighter in Estimated $20B Deal", "kind": "military", "source": "defense", "rating": 72, "detail_fa": "تیتر RSS دفاعی / رصد عملیاتی — برای امروز.", "kind_fa": "نظامی"}, {"date": "2026-10-03", "title_fa": "به روز شده: نیروی دریایی تا حدی ناو هواپیمابر جان اف کندی را پذیرفت، قرارداد تعمیر اساسی USS Harry S. Truman به HII Newport News اهدا شد.", "title_en": "UPDATED: Navy Partially Accepts Carrier John F. Kennedy, HII Newport News Awarded USS Harry S. Truman Overhaul Contract", "kind": "military", "source": "defense", "rating": 72, "detail_fa": "تیتر RSS دفاعی / رصد عملیاتی — برای امروز.", "kind_fa": "نظامی"}, {"date": "2026-10-03", "title_fa": "اتحادیه اروپا به کشتی های بیشتری برای دریای سرخ نیاز دارد. نیروی دریایی اروپا استقرار هرمز را تنظیم می کند", "title_en": "EU Needs More Ships for Red Sea; European Navies Adjust Hormuz Deployments", "kind": "military", "source": "defense", "rating": 72, "detail_fa": "تیتر RSS دفاعی / رصد عملیاتی — برای امروز.", "kind_fa": "نظامی"}, {"date": "2026-10-03", "title_fa": "ارتش ایالات متحده قصد دارد نیروهای بیشتری را در خاورمیانه مستقر کند - jpost.com", "title_en": "US military plans to deploy more forces to Middle East - jpost.com", "kind": "military", "source": "defense", "rating": 72, "detail_fa": "تیتر RSS دفاعی / رصد عملیاتی — برای امروز.", "kind_fa": "نظامی"}, {"date": "2026-10-03", "title_fa": "Is a New Case Being Built for Another Attack on ایران? - WANA News Agency", "title_en": "Is a New Case Being Built for Another Attack on Iran? - WANA News Agency", "kind": "news", "source": "news", "rating": 70, "detail_fa": "تیتر شدید ۲۴ ساعت اخیر — رویداد آینده قطعی نیست؛ سیگنال رصد است.", "kind_fa": "خبر / رصد"}, {"date": "2026-10-03", "title_fa": "ایران braces for possibly bigger US bombing campaign - Türkiye Today", "title_en": "Iran braces for possibly bigger US bombing campaign - Türkiye Today", "kind": "news", "source": "news", "rating": 70, "detail_fa": "تیتر شدید ۲۴ ساعت اخیر — رویداد آینده قطعی نیست؛ سیگنال رصد است.", "kind_fa": "خبر / رصد"}, {"date": "2026-10-03", "title_fa": "President Trump issues ultimatum to ایران: Sign a peace deal or cease to exist - WBFF", "title_en": "President Trump issues ultimatum to Iran: Sign a peace deal or cease to exist - WBFF", "kind": "news", "source": "news", "rating": 70, "detail_fa": "تیتر شدید ۲۴ ساعت اخیر — رویداد آینده قطعی نیست؛ سیگنال رصد است.", "kind_fa": "خبر / رصد"}, {"date": "2026-10-03", "title_fa": "IDF targets Yahya Sinwar's successor, Hamas Gaza leader Ali al-Amoudi, in حمله - jpost.com", "title_en": "IDF targets Yahya Sinwar's successor, Hamas Gaza leader Ali al-Amoudi, in strike - jpost.com", "kind": "military", "source": "watch", "rating": 68, "detail_fa": "رصد اکانت/منبع «ارتش اسرائیل» از طریق خبر عمومی (بدون X API).", "kind_fa": "نظامی"}, {"date": "2026-10-03", "title_fa": "Live Updates: Latest from Israel, ایران, and the Middle East - jpost.com", "title_en": "Live Updates: Latest from Israel, Iran, and the Middle East - jpost.com", "kind": "military", "source": "watch", "rating": 68, "detail_fa": "رصد اکانت/منبع «ارتش اسرائیل» از طریق خبر عمومی (بدون X API).", "kind_fa": "نظامی"}, {"date": "2026-10-03", "title_fa": "Netanyahu plotting to drag Trump into new war with ایران - Tabnak", "title_en": "Netanyahu plotting to drag Trump into new war with Iran - Tabnak", "kind": "military", "source": "watch", "rating": 68, "detail_fa": "رصد اکانت/منبع «نخست‌وزیر اسرائیل» از طریق خبر عمومی (بدون X API).", "kind_fa": "نظامی"}, {"date": "2026-10-03", "title_fa": "Netanyahu claims اسرائیلi intel stopped 'murderous' RAF Fairford plot - Türkiye Today", "title_en": "Netanyahu claims Israeli intel stopped 'murderous' RAF Fairford plot - Türkiye Today", "kind": "military", "source": "watch", "rating": 68, "detail_fa": "رصد اکانت/منبع «نخست‌وزیر اسرائیل» از طریق خبر عمومی (بدون X API).", "kind_fa": "نظامی"}, {"date": "2026-10-03", "title_fa": "Netanyahu says Israel warned UK of alleged ایران-backed plot against RAF Fairford - Ynetnews", "title_en": "Netanyahu says Israel warned UK of alleged Iran-backed plot against RAF Fairford - Ynetnews", "kind": "military", "source": "watch", "rating": 68, "detail_fa": "رصد اکانت/منبع «نخست‌وزیر اسرائیل» از طریق خبر عمومی (بدون X API).", "kind_fa": "نظامی"}]}, {"day": 2, "date": "2026-10-04", "weekday": "یکشنبه", "n_events": 0, "top_rating": 0, "events": []}, {"day": 3, "date": "2026-10-05", "weekday": "دوشنبه", "n_events": 0, "top_rating": 0, "events": []}, {"day": 4, "date": "2026-10-06", "weekday": "سه‌شنبه", "n_events": 0, "top_rating": 0, "events": []}, {"day": 5, "date": "2026-10-07", "weekday": "چهارشنبه", "n_events": 1, "top_rating": 60, "events": [{"date": "2026-10-07", "title_fa": "سالگرد 15 مهر (حمله حماس)", "kind": "public", "source": "calendar", "rating": 60, "detail_fa": "سالگرد نمادین؛ احتمال عملیات یا تنش بیشتر.", "kind_fa": "مناسبت"}]}, {"day": 6, "date": "2026-10-08", "weekday": "پنجشنبه", "n_events": 1, "top_rating": 95, "events": [{"date": "2026-10-08", "title_fa": "آیا آتش‌بس آمریکا–ایران تا 15 مهر ادامه دارد؟", "title_en": "US x Iran ceasefire continues through October 7?", "kind": "polymarket", "source": "polymarket", "rating": 95, "yes_pct": 93.5, "detail_fa": "احتمال ضمنی Polymarket: 93.5٪ · حجم ۲۴س: 66,734", "url_hint": "polymarket", "kind_fa": "بازار پیش‌بینی"}]}, {"day": 7, "date": "2026-10-09", "weekday": "جمعه", "n_events": 0, "top_rating": 0, "events": []}, {"day": 8, "date": "2026-10-10", "weekday": "شنبه", "n_events": 1, "top_rating": 24, "events": [{"date": "2026-10-10", "title_fa": "آیا آمریکا تا قبل از 2027 به ایران حمله نظامی می‌کند؟", "title_en": "Will the U.S. invade Iran before 2027?", "kind": "military", "source": "polymarket", "rating": 24, "yes_pct": 16.5, "detail_fa": "احتمال ضمنی Polymarket: 16.5٪ · حجم ۲۴س: 319,062", "url_hint": "polymarket", "kind_fa": "نظامی"}]}, {"day": 9, "date": "2026-10-11", "weekday": "یکشنبه", "n_events": 0, "top_rating": 0, "events": []}, {"day": 10, "date": "2026-10-12", "weekday": "دوشنبه", "n_events": 0, "top_rating": 0, "events": []}, {"day": 11, "date": "2026-10-13", "weekday": "سه‌شنبه", "n_events": 1, "top_rating": 45, "events": [{"date": "2026-10-13", "title_fa": "پنجره انتشار CPI ایالات متحده (تقریبا)", "title_en": "US CPI release window (approx)", "kind": "econ", "source": "calendar", "rating": 45, "detail_fa": "تاریخ دقیق ماهانه جابه‌جا می‌شود؛ این فقط پنجرهٔ رصد تقریبی است.", "approx": true, "kind_fa": "اقتصادی"}]}, {"day": 12, "date": "2026-10-14", "weekday": "چهارشنبه", "n_events": 0, "top_rating": 0, "events": []}, {"day": 13, "date": "2026-10-15", "weekday": "پنجشنبه", "n_events": 0, "top_rating": 0, "events": []}, {"day": 14, "date": "2026-10-16", "weekday": "جمعه", "n_events": 2, "top_rating": 89, "events": [{"date": "2026-10-16", "title_fa": "آیا آتش‌بس آمریکا–ایران تا 23 مهر ادامه دارد؟", "title_en": "US x Iran ceasefire continues through October 15?", "kind": "polymarket", "source": "polymarket", "rating": 89, "yes_pct": 81.5, "detail_fa": "احتمال ضمنی Polymarket: 81.5٪ · حجم ۲۴س: 54,071", "url_hint": "polymarket", "kind_fa": "بازار پیش‌بینی"}, {"date": "2026-10-16", "title_fa": "آیا آمریکا پایان محاصره ایران را تا 23 مهر اعلام می‌کند؟", "title_en": "US announces end of Iranian blockade by October 15, 2026?", "kind": "military", "source": "polymarket", "rating": 23, "yes_pct": 9.0, "detail_fa": "احتمال ضمنی Polymarket: 9.0٪ · حجم ۲۴س: 150,605", "url_hint": "polymarket", "kind_fa": "نظامی"}]}, {"day": 15, "date": "2026-10-17", "weekday": "شنبه", "n_events": 0, "top_rating": 0, "events": []}, {"day": 16, "date": "2026-10-18", "weekday": "یکشنبه", "n_events": 0, "top_rating": 0, "events": []}, {"day": 17, "date": "2026-10-19", "weekday": "دوشنبه", "n_events": 0, "top_rating": 0, "events": []}, {"day": 18, "date": "2026-10-20", "weekday": "سه‌شنبه", "n_events": 0, "top_rating": 0, "events": []}, {"day": 19, "date": "2026-10-21", "weekday": "چهارشنبه", "n_events": 0, "top_rating": 0, "events": []}, {"day": 20, "date": "2026-10-22", "weekday": "پنجشنبه", "n_events": 0, "top_rating": 0, "events": []}, {"day": 21, "date": "2026-10-23", "weekday": "جمعه", "n_events": 0, "top_rating": 0, "events": []}, {"day": 22, "date": "2026-10-24", "weekday": "شنبه", "n_events": 0, "top_rating": 0, "events": []}, {"day": 23, "date": "2026-10-25", "weekday": "یکشنبه", "n_events": 0, "top_rating": 0, "events": []}, {"day": 24, "date": "2026-10-26", "weekday": "دوشنبه", "n_events": 0, "top_rating": 0, "events": []}, {"day": 25, "date": "2026-10-27", "weekday": "سه‌شنبه", "n_events": 0, "top_rating": 0, "events": []}, {"day": 26, "date": "2026-10-28", "weekday": "چهارشنبه", "n_events": 2, "top_rating": 60, "events": [{"date": "2026-10-28", "title_fa": "تصمیم نرخ بهره فدرال رزرو (FOMC)", "kind": "econ", "source": "calendar", "rating": 60, "detail_fa": "دلار، طلا و نفت معمولاً واکنش نشان می‌دهند.", "kind_fa": "اقتصادی"}, {"date": "2026-10-28", "title_fa": "آیا نتانیاهو نخست‌وزیر بعدی اسرائیل می‌شود؟", "title_en": "Will Benjamin Netanyahu be the next Prime Minister of Israel?", "kind": "polymarket", "source": "polymarket", "rating": 35, "yes_pct": 35.5, "detail_fa": "احتمال ضمنی Polymarket: 35.5٪ · حجم ۲۴س: 92,167", "url_hint": "polymarket", "kind_fa": "بازار پیش‌بینی"}]}, {"day": 27, "date": "2026-10-29", "weekday": "پنجشنبه", "n_events": 0, "top_rating": 0, "events": []}, {"day": 28, "date": "2026-10-30", "weekday": "جمعه", "n_events": 0, "top_rating": 0, "events": []}, {"day": 29, "date": "2026-10-31", "weekday": "شنبه", "n_events": 1, "top_rating": 70, "events": [{"date": "2026-10-31", "title_fa": "آیا آتش‌بس آمریکا–ایران تا 9 آبان ادامه دارد؟", "title_en": "US x Iran ceasefire continues through October 31?", "kind": "polymarket", "source": "polymarket", "rating": 70, "yes_pct": 62.5, "detail_fa": "احتمال ضمنی Polymarket: 62.5٪ · حجم ۲۴س: 95,572", "url_hint": "polymarket", "kind_fa": "بازار پیش‌بینی"}]}, {"day": 30, "date": "2026-11-01", "weekday": "یکشنبه", "n_events": 4, "top_rating": 29, "events": [{"date": "2026-11-01", "title_fa": "آیا آمریکا پایان محاصره ایران را تا 9 آبان اعلام می‌کند؟", "title_en": "US announces end of Iranian blockade by October 31, 2026?", "kind": "military", "source": "polymarket", "rating": 29, "yes_pct": 21.5, "detail_fa": "احتمال ضمنی Polymarket: 21.5٪ · حجم ۲۴س: 128,324", "url_hint": "polymarket", "kind_fa": "نظامی"}, {"date": "2026-11-01", "title_fa": "ترافیک تنگه هرمز تا 10 مهرماه به حالت عادی باز می گردد؟", "title_en": "Strait of Hormuz traffic returns to normal by October 31?", "kind": "military", "source": "polymarket", "rating": 15, "yes_pct": 2.9, "detail_fa": "احتمال ضمنی Polymarket: 2.9٪ · حجم ۲۴س: 146,961", "url_hint": "polymarket", "kind_fa": "نظامی"}, {"date": "2026-11-01", "title_fa": "Israel accuses ایران/proxies of plane stabbing incident by Oct 31?", "title_en": "Israel accuses Iran/proxies of plane stabbing incident by Oct 31?", "kind": "polymarket", "source": "polymarket", "rating": 15, "yes_pct": 12.5, "detail_fa": "احتمال ضمنی Polymarket: 12.5٪ · حجم ۲۴س: 88,566", "url_hint": "polymarket", "kind_fa": "بازار پیش‌بینی"}, {"date": "2026-11-01", "title_fa": "Kharg Island no longer under ایرانian control by 9 آبان?", "title_en": "Kharg Island no longer under Iranian control by October 31?", "kind": "polymarket", "source": "polymarket", "rating": 15, "yes_pct": 1.7, "detail_fa": "احتمال ضمنی Polymarket: 1.7٪ · حجم ۲۴س: 85,611", "url_hint": "polymarket", "kind_fa": "بازار پیش‌بینی"}]}], "n_events": 30, "note_fa": "تقویم ترکیبی: تاریخ‌های قطعی اقتصادی/انتخابات، curated، Polymarket، RSS دفاعی و رصد اکانت‌ها از خبر عمومی، به‌علاوه تیترهای شدید امروز. رویداد ژئوپلیتیک جعلی ساخته نمی‌شود."}, "agenda_markets": [{"question": "Will the U.S. invade Iran before 2027?", "yes": 0.165, "vol24h": 319062.20858000003, "end": "2027-01-01T04:59:00Z", "escalation": true}, {"question": "Will the Democratic Party control the House after the 2026 Midterm elections?", "yes": 0.935, "vol24h": 242059.73578300004, "end": "2026-11-04T04:59:00Z", "escalation": false}, {"question": "Strait of Hormuz traffic returns to normal by December 31?", "yes": 0.195, "vol24h": 192774.319162, "end": "2027-01-01T04:59:00Z", "escalation": false}, {"question": "US announces end of Iranian blockade by October 15, 2026?", "yes": 0.09, "vol24h": 150605.500218, "end": "2026-10-16T03:59:00Z", "escalation": true}, {"question": "Strait of Hormuz traffic returns to normal by October 31?", "yes": 0.029, "vol24h": 146961.311319, "end": "2026-11-01T03:59:00Z", "escalation": false}, {"question": "US announces end of Iranian blockade by October 31, 2026?", "yes": 0.215, "vol24h": 128324.222403, "end": "2026-11-01T03:59:00Z", "escalation": true}, {"question": "US x Iran ceasefire continues through October 31?", "yes": 0.625, "vol24h": 95572.675086, "end": "2026-10-31T23:59:00Z", "escalation": true}, {"question": "Will Benjamin Netanyahu be the next Prime Minister of Israel?", "yes": 0.355, "vol24h": 92167.15428399999, "end": "2026-10-28T03:59:00Z", "escalation": false}, {"question": "Israel accuses Iran/proxies of plane stabbing incident by Oct 31?", "yes": 0.125, "vol24h": 88566.881256, "end": "2026-11-01T03:59:00Z", "escalation": false}, {"question": "Kharg Island no longer under Iranian control by October 31?", "yes": 0.0165, "vol24h": 85611.019309, "end": "2026-11-01T03:59:00Z", "escalation": false}, {"question": "US x Iran ceasefire continues through October 7?", "yes": 0.935, "vol24h": 66734.204411, "end": "2026-10-08T03:59:00Z", "escalation": true}, {"question": "US x Iran ceasefire continues through October 15?", "yes": 0.815, "vol24h": 54071.30015, "end": "2026-10-16T03:59:00Z", "escalation": true}, {"question": "Will the Democratic Party control the Senate after the 2026 Midterm elections?", "yes": 0.645, "vol24h": 54049.082994, "end": "2026-11-04T04:59:00Z", "escalation": false}, {"question": "Will the Iranian regime fall before 2027?", "yes": 0.065, "vol24h": 49258.343196, "end": "2027-01-01T04:59:00Z", "escalation": false}, {"question": "Will the Republican Party control the House after the 2026 Midterm elections?", "yes": 0.065, "vol24h": 36435.79429799999, "end": "2026-11-04T04:59:00Z", "escalation": false}], "econ": {"rows": [{"key": "gold", "label": "طلا جهانی (اونس)", "unit": "$", "price": 4162.2998046875, "chg_pct": -0.95, "fc": {"1": {"pred": 4143.412955195574, "pct": -0.45, "low": 4099.296625648378, "high": 4188.004061444836, "dir": "down", "flat_pct": 0.161}, "7": {"pred": 4083.001091391017, "pct": -1.91, "low": 3968.987490104768, "high": 4200.289860792728, "dir": "down", "flat_pct": 0.425}, "30": {"pred": 3834.3198228416027, "pct": -7.88, "low": 3615.974841601473, "high": 4065.849224029642, "dir": "down", "flat_pct": 0.879}}, "history_days": 126, "hist": [4332.7998, 4387.5, 4399.7002, 4424.8999, 4383.8999, 4376.3999, 4318.3999, 4298.0, 4321.2002, 4168.3999, 4179.7002, 4186.7002, 4202.2998, 4162.2998]}, {"key": "brent", "label": "نفت برنت (بشکه)", "unit": "$", "price": 102.25, "chg_pct": -0.06, "fc": {"1": {"pred": 101.54156853947201, "pct": -0.69, "low": 98.92379076168343, "high": 104.2286194460107, "dir": "down", "flat_pct": 0.392}, "7": {"pred": 100.50957823556037, "pct": -1.7, "low": 93.79860561371504, "high": 107.70069822459185, "dir": "down", "flat_pct": 1.037}, "30": {"pred": 95.08296504478011, "pct": -7.01, "low": 82.40885924033725, "high": 109.70629038002296, "dir": "down", "flat_pct": 2.146}}, "history_days": 126, "hist": [108.75, 105.83, 104.82, 103.87, 100.34, 99.25, 103.08, 106.6, 104.32, 105.28, 102.59, 103.53, 102.31, 102.25]}, {"key": "sp500", "label": "بورس آمریکا S&P 500", "unit": "", "price": 7722.72021484375, "chg_pct": 0.73, "fc": {"1": {"pred": 7735.701181016859, "pct": 0.17, "low": 7685.569201991233, "high": 7786.16016449134, "dir": "up", "flat_pct": 0.098}, "7": {"pred": 7735.676531885421, "pct": 0.17, "low": 7603.746531415889, "high": 7869.895604584279, "dir": "flat", "flat_pct": 0.258}, "30": {"pred": 7776.147799776149, "pct": 0.69, "low": 7504.102374813721, "high": 8058.055658584285, "dir": "up", "flat_pct": 0.534}}, "history_days": 126, "hist": [7585.73, 7551.8101, 7637.7598, 7650.5, 7764.7002, 7764.6401, 7706.0298, 7704.1299, 7743.4102, 7683.6899, 7670.8398, 7651.54, 7666.4502, 7722.7202]}, {"key": "btc", "label": "بیت‌کوین", "unit": "$", "price": 84944.0703125, "chg_pct": 0.53, "fc": {"1": {"pred": 85227.14218300523, "pct": 0.33, "low": 83352.3674468926, "high": 87144.084651347, "dir": "flat", "flat_pct": 0.334}, "7": {"pred": 85856.85319677294, "pct": 1.07, "low": 80950.0357544976, "high": 91061.09925890503, "dir": "up", "flat_pct": 0.883}, "30": {"pred": 88893.43267591273, "pct": 4.65, "low": 78697.28542542532, "high": 100410.60921211974, "dir": "up", "flat_pct": 1.827}}, "history_days": 184, "hist": [81142.6094, 86602.9141, 86172.2812, 84383.0078, 84379.0625, 84034.9219, 84406.4531, 84458.0859, 83502.6094, 83622.4297, 83553.8516, 84853.1016, 84497.2109, 84944.0703]}, {"key": "usd", "label": "دلار آزاد", "unit": "تومان", "price": 267900.0, "chg_pct": 3.65, "fc": {"1": {"pred": 266057.85271684045, "pct": -0.69, "low": 262884.2382542958, "high": 269269.7799699265, "dir": "down", "flat_pct": 0.18}, "7": {"pred": 265101.7664349402, "pct": -1.04, "low": 256817.254715366, "high": 273653.5231825318, "dir": "down", "flat_pct": 0.476}, "30": {"pred": 256390.06684632815, "pct": -4.3, "low": 240080.25818562394, "high": 273807.8793910632, "dir": "down", "flat_pct": 0.986}}, "history_days": 2, "hist": [258465.0, 267900.0]}, {"key": "usdt", "label": "تتر", "unit": "تومان", "price": 266400.0, "chg_pct": 1.7, "fc": {"1": {"pred": 264568.1670913262, "pct": -0.69, "low": 261412.32202666815, "high": 267762.1104292214, "dir": "down", "flat_pct": 0.18}, "7": {"pred": 263617.43403608835, "pct": -1.04, "low": 255379.30816040875, "high": 272121.3086070417, "dir": "down", "flat_pct": 0.476}, "30": {"pred": 254954.5121607384, "pct": -4.3, "low": 238736.0238172834, "high": 272274.8005590863, "dir": "down", "flat_pct": 0.986}}, "history_days": 2, "hist": [261956.0, 266400.0]}, {"key": "tedpix", "label": "بورس تهران (شاخص کل)", "unit": "", "price": 7808068.7, "chg_pct": 0.53, "fc": {"1": {"pred": 7853094.419914584, "pct": 0.58, "low": 7759420.454751472, "high": 7947899.244244376, "dir": "up", "flat_pct": 0.18}, "7": {"pred": 7876689.077464662, "pct": 0.88, "low": 7630540.121721237, "high": 8130778.4027555995, "dir": "up", "flat_pct": 0.476}, "30": {"pred": 8099096.200974989, "pct": 3.73, "low": 7583886.267191899, "high": 8649306.827874623, "dir": "up", "flat_pct": 0.986}}, "history_days": 2, "hist": [7766531.3, 7808068.7]}, {"key": "gold18", "label": "طلای ۱۸ عیار (گرم)", "unit": "تومان", "price": 26225300.0, "chg_pct": 2.07, "fc": {"1": {"pred": 26015033.791967433, "pct": -0.8, "low": 25704718.998990268, "high": 26329094.79476484, "dir": "down", "flat_pct": 0.18}, "7": {"pred": 25905999.781742588, "pct": -1.22, "low": 25096429.32249858, "high": 26741685.682353117, "dir": "down", "flat_pct": 0.476}, "30": {"pred": 24915543.23586497, "pct": -4.99, "low": 23330584.2401718, "high": 26608176.13257015, "dir": "down", "flat_pct": 0.986}}, "history_days": 2, "hist": [25694400.0, 26225300.0]}, {"key": "coin", "label": "سکه امامی", "unit": "تومان", "price": 260320000.0, "chg_pct": 3.27, "fc": {"1": {"pred": 258232836.1057819, "pct": -0.8, "low": 254642765.53194565, "high": 261873521.14218968, "dir": "down", "flat_pct": 0.21}, "7": {"pred": 257150532.62243828, "pct": -1.22, "low": 247799790.8372579, "high": 266854125.27822557, "dir": "down", "flat_pct": 0.556}, "30": {"pred": 247318971.19042945, "pct": -4.99, "low": 229063149.32859105, "high": 267029741.3179668, "dir": "down", "flat_pct": 1.15}}, "history_days": 2, "hist": [252065000.0, 260320000.0]}], "stats": {"all": {"n": 9, "dir_acc": 11, "in_range": 56, "mae_pct": 1.79}, "by_asset": {"gold": {"n": 1, "dir_acc": 0, "in_range": 100, "mae_pct": 0.58}, "brent": {"n": 1, "dir_acc": 0, "in_range": 100, "mae_pct": 0.88}, "sp500": {"n": 1, "dir_acc": 0, "in_range": 100, "mae_pct": 0.17}, "btc": {"n": 1, "dir_acc": 0, "in_range": 100, "mae_pct": 0.14}, "usd": {"n": 1, "dir_acc": 0, "in_range": 0, "mae_pct": 4.46}, "usdt": {"n": 1, "dir_acc": 0, "in_range": 0, "mae_pct": 2.51}, "tedpix": {"n": 1, "dir_acc": 100, "in_range": 100, "mae_pct": 0.15}, "gold18": {"n": 1, "dir_acc": 0, "in_range": 0, "mae_pct": 3.01}, "coin": {"n": 1, "dir_acc": 0, "in_range": 0, "mae_pct": 4.21}}, "recent": [{"made": "2026-10-02", "target": "2026-10-03", "asset": "usdt", "h": 1, "base": 261956.0, "pred": 259842.72671112898, "pct": -0.81, "low": 256743.24805617973, "high": 262979.623167735, "dir": "down", "flat_pct": 0.18, "actual": 266400.0, "actual_pct": 1.7, "actual_dir": "up", "graded": "2026-10-03", "hit": false, "in_range": false}, {"made": "2026-10-02", "target": "2026-10-03", "asset": "usd", "h": 1, "base": 258465.0, "pred": 256379.88959745894, "pct": -0.81, "low": 253321.7166579139, "high": 259474.98168413257, "dir": "down", "flat_pct": 0.18, "actual": 267900.0, "actual_pct": 3.65, "actual_dir": "up", "graded": "2026-10-03", "hit": false, "in_range": false}, {"made": "2026-10-02", "target": "2026-10-03", "asset": "tedpix", "h": 1, "base": 7766531.3, "pred": 7819132.716334277, "pct": 0.68, "low": 7725863.856123169, "high": 7913527.545168065, "dir": "up", "flat_pct": 0.18, "actual": 7808068.7, "actual_pct": 0.53, "actual_dir": "up", "graded": "2026-10-03", "hit": true, "in_range": true}, {"made": "2026-10-02", "target": "2026-10-03", "asset": "sp500", "h": 1, "base": 7720.22021484375, "pred": 7735.521723401427, "pct": 0.2, "low": 7685.538588769767, "high": 7785.82992487372, "dir": "up", "flat_pct": 0.097, "actual": 7722.72021484375, "actual_pct": 0.03, "actual_dir": "flat", "graded": "2026-10-03", "hit": false, "in_range": true}, {"made": "2026-10-02", "target": "2026-10-03", "asset": "gold18", "h": 1, "base": 25694400.0, "pred": 25452731.60164556, "pct": -0.94, "low": 25149124.110652916, "high": 25760004.329971373, "dir": "down", "flat_pct": 0.18, "actual": 26225300.0, "actual_pct": 2.07, "actual_dir": "up", "graded": "2026-10-03", "hit": false, "in_range": false}, {"made": "2026-10-02", "target": "2026-10-03", "asset": "gold", "h": 1, "base": 4167.60009765625, "pred": 4147.346715153723, "pct": -0.49, "low": 4103.307222528256, "high": 4191.858869660334, "dir": "down", "flat_pct": 0.16, "actual": 4171.2998046875, "actual_pct": 0.09, "actual_dir": "flat", "graded": "2026-10-03", "hit": false, "in_range": true}, {"made": "2026-10-02", "target": "2026-10-03", "asset": "coin", "h": 1, "base": 252065000.0, "pred": 249694205.39762703, "pct": -0.94, "low": 246222842.75926664, "high": 253214508.89960498, "dir": "down", "flat_pct": 0.21, "actual": 260320000.0, "actual_pct": 3.27, "actual_dir": "up", "graded": "2026-10-03", "hit": false, "in_range": false}, {"made": "2026-10-02", "target": "2026-10-03", "asset": "btc", "h": 1, "base": 84073.21875, "pred": 84277.42470122421, "pct": 0.24, "low": 82402.38780635211, "high": 86195.12739075015, "dir": "flat", "flat_pct": 0.337, "actual": 84388.90625, "actual_pct": 0.38, "actual_dir": "up", "graded": "2026-10-03", "hit": false, "in_range": true}, {"made": "2026-10-02", "target": "2026-10-03", "asset": "brent", "h": 1, "base": 102.73999786376953, "pred": 101.95543527939236, "pct": -0.76, "low": 99.32863426312512, "high": 104.65170351052923, "dir": "down", "flat_pct": 0.392, "actual": 102.86000061035156, "actual_pct": 0.12, "actual_dir": "flat", "graded": "2026-10-03", "hit": false, "in_range": true}]}, "tension": {"1": -0.02300000000000004, "7": -0.035, "30": -0.14637931034482754}, "date": "2026-10-03"}, "advisor": {"ranking": [{"key": "tedpix", "label": "بورس تهران (شاخص کل)", "unit": "", "price": 7808068.7, "p1": 0.58, "p7": 0.88, "p30": 3.73, "score": 0.268, "acc": 100, "acc_n": 1, "hist": [7766531.3, 7808068.7], "lo7": 7630540.121721237, "hi7": 8130778.4027555995}, {"key": "btc", "label": "بیت‌کوین", "unit": "$", "price": 84944.0703125, "p1": 0.33, "p7": 1.07, "p30": 4.65, "score": 0.171, "acc": 0, "acc_n": 1, "hist": [81142.6094, 86602.9141, 86172.2812, 84383.0078, 84379.0625, 84034.9219, 84406.4531, 84458.0859, 83502.6094, 83622.4297, 83553.8516, 84853.1016, 84497.2109, 84944.0703], "lo7": 80950.0357544976, "hi7": 91061.09925890503}, {"key": "usd", "label": "دلار آزاد", "unit": "تومان", "price": 267900.0, "p1": -0.69, "p7": -1.04, "p30": -4.3, "score": -0.317, "acc": 0, "acc_n": 1, "hist": [258465.0, 267900.0], "lo7": 256817.254715366, "hi7": 273653.5231825318}, {"key": "usdt", "label": "تتر", "unit": "تومان", "price": 266400.0, "p1": -0.69, "p7": -1.04, "p30": -4.3, "score": -0.317, "acc": 0, "acc_n": 1, "hist": [261956.0, 266400.0], "lo7": 255379.30816040875, "hi7": 272121.3086070417}, {"key": "coin", "label": "سکه امامی", "unit": "تومان", "price": 260320000.0, "p1": -0.8, "p7": -1.22, "p30": -4.99, "score": -0.317, "acc": 0, "acc_n": 1, "hist": [252065000.0, 260320000.0], "lo7": 247799790.8372579, "hi7": 266854125.27822557}, {"key": "gold18", "label": "طلای ۱۸ عیار (گرم)", "unit": "تومان", "price": 26225300.0, "p1": -0.8, "p7": -1.22, "p30": -4.99, "score": -0.372, "acc": 0, "acc_n": 1, "hist": [25694400.0, 26225300.0], "lo7": 25096429.32249858, "hi7": 26741685.682353117}], "today": {"made": "2026-10-03", "asset": "tedpix", "label": "بورس تهران (شاخص کل)", "unit": "", "entry": 7766531.3, "exp7": 1.32}, "history": [{"made": "2026-10-03", "asset": "tedpix", "label": "بورس تهران (شاخص کل)", "unit": "", "entry": 7766531.3, "exp7": 1.32}, {"made": "2026-10-02", "asset": "tedpix", "label": "بورس تهران (شاخص کل)", "unit": "", "entry": 7766531.3, "exp7": 1.21}], "summary": {"1": {"n": 0, "avg": null, "win": null}, "7": {"n": 0, "avg": null, "win": null}, "30": {"n": 0, "avg": null, "win": null}}, "date": "2026-10-03", "stocks": {"ranking": [], "today": [{"made": "2026-10-03", "asset": "پارس", "label": "پارس", "unit": "ریال", "entry": 3290.0, "entry_date": "2026-09-30", "exp1": 1.54}, {"made": "2026-10-03", "asset": "کگل", "label": "کگل", "unit": "ریال", "entry": 3195.0, "entry_date": "2026-09-30", "exp1": 1.41}, {"made": "2026-10-03", "asset": "فولاد", "label": "فولاد", "unit": "ریال", "entry": 3620.0, "entry_date": "2026-09-30", "exp1": 1.12}], "history": [{"made": "2026-10-03", "asset": "فولاد", "label": "فولاد", "unit": "ریال", "entry": 3620.0, "entry_date": "2026-09-30", "exp1": 1.12}, {"made": "2026-10-03", "asset": "کگل", "label": "کگل", "unit": "ریال", "entry": 3195.0, "entry_date": "2026-09-30", "exp1": 1.41}, {"made": "2026-10-03", "asset": "پارس", "label": "پارس", "unit": "ریال", "entry": 3290.0, "entry_date": "2026-09-30", "exp1": 1.54}], "summary": {"1": {"n": 0, "avg": null, "win": null}, "7": {"n": 0, "avg": null, "win": null}, "30": {"n": 0, "avg": null, "win": null}}, "date": "2026-10-03", "stale": false}, "gold_tg": {"channel": "fatimacafetrade", "channel_label": "فاطیماگلد", "url": "https://t.me/fatimacafetrade", "price": 4162.2998046875, "decision": {"side": "buy", "label": "خرید اونس · 4151–4154", "zone": {"side": "buy", "lo": 4151, "hi": 4154, "line": "فعلا حمایت4151-54 رو دارم برای خرید تایید لازمه", "ts": "2026-10-01T11:02:55+00:00", "id": "fatimacafetrade/8314", "dist": 8.3}}, "buys": [{"side": "buy", "lo": 4149, "hi": 4153, "line": "خرید دیروز 4149–53 واکنش خیلی خوبی داشت و قیمت از این محدوده تا حوالی 4190 ریکاوری کرد ✅", "ts": "2026-10-01T10:58:49+00:00", "id": "fatimacafetrade/8313"}, {"side": "buy", "lo": 4151, "hi": 4154, "line": "فعلا حمایت4151-54 رو دارم برای خرید تایید لازمه", "ts": "2026-10-01T11:02:55+00:00", "id": "fatimacafetrade/8314"}, {"side": "buy", "lo": 4140, "hi": 4145, "line": "و  سطوح بعدی حمایتی: 4140-45 4123-28 برای ورود دیدن تایید لازمه", "ts": "2026-10-02T10:57:56+00:00", "id": "fatimacafetrade/8323"}, {"side": "buy", "lo": 4123, "hi": 4128, "line": "و  سطوح بعدی حمایتی: 4140-45 4123-28 برای ورود دیدن تایید لازمه", "ts": "2026-10-02T10:57:56+00:00", "id": "fatimacafetrade/8323"}], "sells": [{"side": "sell", "lo": 4213, "hi": 4217, "line": "سطوح فروش با تایید: 4213-17 4226-30", "ts": "2026-09-30T10:24:35+00:00", "id": "fatimacafetrade/8311"}, {"side": "sell", "lo": 4226, "hi": 4230, "line": "سطوح فروش با تایید: 4213-17 4226-30", "ts": "2026-09-30T10:24:35+00:00", "id": "fatimacafetrade/8311"}, {"side": "sell", "lo": 4213, "hi": 4217, "line": "مهم‌تر از اون فروش 4213–17 بود که تقریباً سقف حرکت دیروز شد و بعد از فعال شدن قیمت تا محدوده 4153  بالای 600 پیپ ریزش دا", "ts": "2026-10-01T10:58:49+00:00", "id": "fatimacafetrade/8313"}, {"side": "sell", "lo": 4196, "hi": 4201, "line": "مقاومت 4196-4201 رو قبلا داشتیم که  قیمت با رسیدن بهش 100 پیپ ریزش داشته✅ همچنان معتبره با تایید", "ts": "2026-10-01T11:04:58+00:00", "id": "fatimacafetrade/8316"}, {"side": "sell", "lo": 4213, "hi": 4217, "line": "سطوح فروش با تایید: 4213-17 4226-30", "ts": "2026-10-01T11:05:32+00:00", "id": "fatimacafetrade/8317"}, {"side": "sell", "lo": 4226, "hi": 4230, "line": "سطوح فروش با تایید: 4213-17 4226-30", "ts": "2026-10-01T11:05:32+00:00", "id": "fatimacafetrade/8317"}, {"side": "sell", "lo": 4196, "hi": 4201, "line": "مجدد 4196-4201 مقاومته با تایید", "ts": "2026-10-02T10:59:03+00:00", "id": "fatimacafetrade/8324"}, {"side": "sell", "lo": 4213, "hi": 4217, "line": "سطوح فروش با تایید: 4213-17 4226-30", "ts": "2026-10-02T10:59:43+00:00", "id": "fatimacafetrade/8325"}], "messages": [{"id": "fatimacafetrade/8309", "ts": "2026-09-30T10:21:18+00:00", "text": "سطوح فروش با تایید:\n۴۲۱۳-۱۷\n۴۲۲۶-۳۰"}, {"id": "fatimacafetrade/8310", "ts": "2026-09-30T10:23:00+00:00", "text": "فعلا در تایم پایین حفظ ۴۱۶۷ مهمه برای اینکه طلا دوباره بتونه به سمت۴۲۰۰ و۴۲۱۷ حرکت کنه و شکستش میتونه اسکلپ فروش فراهم کنه"}, {"id": "fatimacafetrade/8311", "ts": "2026-09-30T10:24:35+00:00", "text": "سطوح فروش با تایید: ۴۲۱۳-۱۷ ۴۲۲۶-۳۰"}, {"id": "fatimacafetrade/8312", "ts": "2026-10-01T10:58:05+00:00", "text": "درود دوستان روزتون به خیر✨"}, {"id": "fatimacafetrade/8313", "ts": "2026-10-01T10:58:49+00:00", "text": "خرید دیروز 4149–53 واکنش خیلی خوبی داشت و قیمت از این محدوده تا حوالی 4190 ریکاوری کرد ✅\n\nمهم‌تر از اون فروش 4213–17 بود که تقریباً سقف حرکت دیروز شد و بعد از فعال شدن قیمت تا محدوده 4153  بالای ۶۰۰ پیپ ریزش داشت ✅"}, {"id": "fatimacafetrade/8314", "ts": "2026-10-01T11:02:55+00:00", "text": "فعلا حمایت۴۱۵۱-۵۴ رو دارم برای خرید تایید لازمه"}], "today": {"made": "2026-10-03", "asset": "gold", "side": "buy", "label": "خرید اونس · 4168–4172", "unit": "$", "entry": 4171.3, "entry_date": "2026-10-03", "zone": {"side": "buy", "lo": 4168, "hi": 4172, "line": "سطوح خرید با تایید: 4168-72 4149-53 4138-42", "ts": "2026-10-02T10:57:00+00:00", "id": "fatimacafetrade/1", "dist": 0.0}, "channel": "fatimacafetrade"}, "history": [{"made": "2026-10-03", "asset": "gold", "side": "buy", "label": "خرید اونس · 4168–4172", "unit": "$", "entry": 4171.3, "entry_date": "2026-10-03", "zone": {"side": "buy", "lo": 4168, "hi": 4172, "line": "سطوح خرید با تایید: 4168-72 4149-53 4138-42", "ts": "2026-10-02T10:57:00+00:00", "id": "fatimacafetrade/1", "dist": 0.0}, "channel": "fatimacafetrade"}], "summary": {"1": {"n": 0, "avg": null, "win": null}, "7": {"n": 0, "avg": null, "win": null}, "30": {"n": 0, "avg": null, "win": null}}, "date": "2026-10-03", "stale": false, "error": null, "fetched_at": "2026-10-03T18:36:49+00:00"}}, "telegram_notice": "سیگنال‌ها از کانال عمومی تلگرام خوانده می‌شوند و فقط به‌صورت کاغذی روی اونس طلا سنجیده می‌شوند؛ توصیه مالی نیست."}</script>
+<script>
+(() => {
+  const tabs = [...document.querySelectorAll('[role=tab]')];
+  const show = name => {
+    tabs.forEach(t => {
+      const on = t.id === 't-' + name;
+      t.setAttribute('aria-selected', on);
+      document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+    });
+    history.replaceState(null, '', '#' + name);
+  };
+  tabs.forEach(t => t.addEventListener('click', () => show(t.id.slice(2))));
+  const h = location.hash.slice(1);
+  if (h === 'econ' || h === 'adv') show(h);
+})();
+</script>
+</body>
+</html>
